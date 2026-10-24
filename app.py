@@ -16,7 +16,7 @@ from growth.report import export_bundle
 
 ROOT = Path(__file__).resolve().parent
 load_dotenv(ROOT / ".env", override=True)
-st.set_page_config(page_title="FI growth intelligence", page_icon=":material/account_balance:", layout="wide")
+st.set_page_config(page_title="FI growth intelligence", page_icon=":material/account_balance:", layout="wide", initial_sidebar_state="auto")
 # Tables otherwise expose an independent CSV/clipboard path before review.
 st.set_option("client.disableDataExport", True)
 
@@ -42,13 +42,17 @@ def advance(payload):
 
 
 with st.sidebar:
-    st.markdown("### :material/account_balance: Growth intelligence")
-    st.caption("A focused research workspace for bank and credit union growth teams.")
+    st.badge("FI  /  GROWTH INTELLIGENCE",icon=":material/account_balance:",color="green")
+    st.markdown("## Your market.\n## Your next move.")
+    st.caption("Competitive insight for banks and credit unions.")
+    st.divider()
+    st.caption("RESEARCH WORKSPACE")
     active = st.session_state.result is not None
     mode = st.selectbox("Research mode", ["Recorded evidence demo", "Live research"], disabled=active, key="mode")
     recorded = mode == "Recorded evidence demo"
     if recorded:
-        st.info("Recorded official-page excerpts from October 24, 2026. Extraction and hypotheses are curated replay; no live search or model calls.")
+        with st.expander("About the recorded demo",icon=":material/info:"):
+            st.caption("Official-page excerpts collected October 24, 2026. Curated extraction and hypotheses; no live search or model calls.")
     else:
         settings = live_settings()
         st.caption("Configure .env locally. Credentials never enter the report.")
@@ -56,13 +60,14 @@ with st.sidebar:
         st.write("Model: " + ("configured" if settings["model_key"] else "missing"))
         st.caption("Model name: " + settings["model"])
     default = demo_request()
-    with st.form("research_setup"):
+    with st.form("research_setup",border=False):
         name = st.text_input("Home institution", default.home.name, disabled=recorded or active, max_chars=120)
         domain = st.text_input("Official domain", default.home.domain, disabled=recorded or active)
         market = st.text_input("Market", default.market, disabled=recorded or active, max_chars=160)
-        st.caption("Scope: consumer checking accounts · three competitors")
-        outage = st.checkbox("Simulate a Skyla source outage", disabled=not recorded or active, key="demo_outage", help="Demonstrates one retry, then an explicit unknown instead of an invented answer.")
-        start = st.form_submit_button("Discover competitors", type="primary", disabled=active, key="start_research", icon=":material/search:")
+        st.caption("Consumer checking · 3 competitors")
+        with st.expander("Demo controls",icon=":material/tune:"):
+            outage = st.checkbox("Simulate a Skyla source outage", disabled=not recorded or active, key="demo_outage", help="Demonstrates one retry, then an explicit unknown instead of an invented answer.")
+        start = st.form_submit_button("Discover competitors", type="primary", disabled=active, key="start_research", icon=":material/search:",width="stretch")
     if start:
         try:
             request = default if recorded else ResearchRequest(home=Institution(name=name,domain=domain),market=market)
@@ -77,7 +82,7 @@ with st.sidebar:
             st.rerun()
         except (ValueError,ValidationError):
             st.error("Check the institution, market and official domain. For live research, set TAVILY_API_KEY and OPENAI_API_KEY in .env.")
-    if st.button("New research", disabled=not active, key="new_research", icon=":material/add:"):
+    if st.button("New research", disabled=not active, key="new_research", icon=":material/add:",width="stretch"):
         for key in ["graph","config","result","run_error"]:
             st.session_state[key] = None
         for key in list(st.session_state):
@@ -85,34 +90,47 @@ with st.sidebar:
                 del st.session_state[key]
         st.rerun()
     st.divider()
-    st.caption("Public sources only. Runs remain in server memory during this browser session; restarting the server clears them. Download approved results to keep a copy.")
+    st.caption(":material/public: Public sources · Human-reviewed output")
+    with st.expander("Session & privacy",icon=":material/shield:"):
+        st.caption("Runs remain in server memory during this browser session; restarting the server clears them. Download approved results to keep a copy.")
 
-st.caption("BANKS & CREDIT UNIONS  /  PROJECT A")
-st.title("Find the next checking growth opportunity")
-st.markdown("Compare the terms. Inspect the evidence. Decide what to test.")
+st.caption("COMPETITIVE INTELLIGENCE  /  CONSUMER BANKING")
+st.title("Checking growth intelligence")
+st.markdown("Turn competitor evidence into your next growth experiment.")
 
 result = st.session_state.result
 if st.session_state.run_error:
     st.error(st.session_state.run_error)
 
 if not result:
-    st.divider()
-    with st.container(horizontal=True, gap="large"):
-        with st.container(border=True):
-            st.subheader(":material/search: Discover")
-            st.write("An agent proposes three competing institutions for your market. You confirm the comparison set.")
-        with st.container(border=True):
-            st.subheader(":material/fact_check: Compare")
-            st.write("Research checking terms, preserve source evidence, and keep unavailable details explicitly unknown.")
-        with st.container(border=True):
-            st.subheader(":material/experiment: Act on a hypothesis")
-            st.write("Review three potential growth experiments and approve a brief you can share with your team.")
-    st.info("Start with the recorded Charlotte demo in the sidebar. Switch to live research to investigate a different institution or market.")
+    st.space("small")
+    with st.container(border=True,key="scope_card"):
+        st.badge("YOUR DEMO MARKET",icon=":material/location_on:",color="green")
+        st.subheader("Truliant Federal Credit Union · Charlotte")
+        st.write("One market. Three competitors. A checking-account brief your growth team can inspect and act on.")
+        st.caption("Recorded evidence demo · No API keys needed · Human approval before export")
+    st.space("small")
+    steps = st.columns(3,gap="medium")
+    with steps[0].container(border=True):
+        st.badge("01 / DISCOVER",icon=":material/travel_explore:",color="green")
+        st.subheader("Map your alternatives")
+        st.write("Review three candidate institutions and confirm the market you want to compare.")
+    with steps[1].container(border=True):
+        st.badge("02 / COMPARE",icon=":material/fact_check:",color="green")
+        st.subheader("See the terms clearly")
+        st.write("Compare checking products with source evidence and explicit gaps.")
+    with steps[2].container(border=True):
+        st.badge("03 / DECIDE",icon=":material/experiment:",color="green")
+        st.subheader("Choose what to test")
+        st.write("Review growth hypotheses, experiments and metrics before sharing your brief.")
+    st.caption(":material/arrow_back: Start with Discover competitors in the research panel. Live research is available when you configure credentials.")
     st.stop()
 
-st.caption(f"{result['request']['home']['name']} · {result['request']['market']} · Consumer checking")
+with st.container(horizontal=True,gap="small"):
+    st.badge(result['request']['home']['name'],icon=":material/account_balance:",color="green")
+    st.badge(result['request']['market'],icon=":material/location_on:",color="blue")
 if result["mode"] == "recorded":
-    st.warning("RECORDED DEMO · Curated evidence and decisions, not a live Tavily/model run. Terms were collected October 24, 2026 and require rechecking before use.")
+    st.info("RECORDED DEMO · Curated evidence from October 24, 2026. No live search or model calls; recheck current terms before use.",icon=":material/history:")
 else:
     st.info("LIVE RESEARCH · Model-extracted claims are checked against collected official-domain excerpts. Review current full disclosures before acting.")
 
@@ -148,28 +166,37 @@ if status == "awaiting competitors":
 profiles = result.get("profiles",[])
 facts = [f for p in profiles for f in p["facts"].values()]
 supported = sum(f["status"] == "Source-supported" for f in facts)
-cols = st.columns(4)
-cols[0].metric("Institutions compared",str(len(profiles)))
-cols[1].metric("Source-supported fields",f"{supported} / {len(facts)}")
-cols[2].metric("Growth hypotheses",str(len(result["hypotheses"])))
-cols[3].metric("Human decision",status.removeprefix("awaiting ").capitalize())
+cols = st.columns(4,gap="small",wrap=False)
+cols[0].metric("Institutions",str(len(profiles)),border=True)
+cols[1].metric("Evidence",f"{supported} / {len(facts)}",border=True,help="Source-supported fields out of all compared fields.")
+cols[2].metric("Hypotheses",str(len(result["hypotheses"])),border=True)
+cols[3].metric("Review status",status.removeprefix("awaiting ").capitalize(),border=True)
 
 brief, evidence, trace, method = st.tabs(["Comparison & opportunities","Evidence & gaps","Run trace","How it works"])
 with brief:
-    st.subheader("Checking account comparison")
-    rows = [{"Field":label, **{p["institution"]["name"]:p["facts"][key]["value"] for p in profiles}} for key,label in FACT_FIELDS.items()]
-    st.dataframe(rows,hide_index=True,height=365,alt="Checking product comparison for the home institution and three confirmed competitors")
-    st.caption("Not verified means the available evidence was insufficient. It does not mean zero fees, no requirement, or no available offer.")
+    with st.container(border=True,key="comparison_card"):
+        st.badge("MARKET SNAPSHOT",icon=":material/compare_arrows:",color="green")
+        st.subheader("How the checking offers compare")
+        rows = [{"Field":label, **{p["institution"]["name"]:p["facts"][key]["value"] for p in profiles}} for key,label in FACT_FIELDS.items()]
+        st.dataframe(rows,hide_index=True,height=365,alt="Checking product comparison for the home institution and three confirmed competitors")
+        st.caption("Not verified = insufficient evidence. It does not mean zero fees, no requirement, or no available offer.")
     st.subheader("Three opportunities to test")
     st.caption("Inference for human review · no promised uplift or unverified claims of product superiority")
     for i,h in enumerate(result["hypotheses"],1):
-        with st.container(border=True):
+        with st.container(border=True,key=f"opportunity_card_{i}"):
+            st.badge(f"OPPORTUNITY {i:02d}",icon=":material/experiment:",color="green")
             st.markdown(f"#### {i}. {h['title']}")
             st.write(h["rationale"])
-            st.markdown("**Test:** " + h["experiment"])
-            st.markdown("**Measure:** " + h["success_metric"])
-            st.caption("Limit: " + h["caveat"])
-            st.caption("Evidence: " + ", ".join(h["source_ids"]))
+            test_col, measure_col = st.columns(2,gap="large")
+            with test_col:
+                st.caption("THE EXPERIMENT")
+                st.write(h["experiment"])
+            with measure_col:
+                st.caption("WHAT TO MEASURE")
+                st.write(h["success_metric"])
+            with st.expander("Evidence & limitations",icon=":material/policy:"):
+                st.caption("Limit: " + h["caveat"])
+                st.caption("Evidence: " + ", ".join(h["source_ids"]))
     if result["warnings"]:
         with st.expander("Research limitations",expanded=True):
             for warning in result["warnings"]:
@@ -205,13 +232,15 @@ with method:
 
 st.divider()
 if status == "awaiting review":
-    st.subheader("Review before sharing")
-    st.write("Check the comparison, supporting excerpts, missing terms and proposed tests. Approval enables file download; it does not publish a campaign.")
-    note = st.text_area("Reviewer notes",key="review_note",max_chars=1000,placeholder="Record caveats or follow-up checks for your team.")
-    reviewed = st.checkbox("I reviewed the evidence and understand the gaps and hypotheses.",key="reviewed_evidence")
-    with st.container(horizontal=True):
-        approve = st.button("Approve and enable downloads",key="approve_report",type="primary",disabled=not reviewed,icon=":material/check:")
-        reject = st.button("Reject this brief",key="reject_report",icon=":material/close:")
+    with st.container(border=True,key="review_card"):
+        st.badge("HUMAN CHECKPOINT",icon=":material/verified_user:",color="green")
+        st.subheader("Ready to share this brief?")
+        st.write("Review the evidence, missing terms and proposed tests. Your approval enables downloads; it does not publish a campaign.")
+        note = st.text_area("Reviewer notes",key="review_note",max_chars=1000,placeholder="Record caveats or follow-up checks for your team.")
+        reviewed = st.checkbox("I reviewed the evidence and understand the gaps and hypotheses.",key="reviewed_evidence")
+        with st.container(horizontal=True):
+            approve = st.button("Approve and enable downloads",key="approve_report",type="primary",disabled=not reviewed,icon=":material/check:")
+            reject = st.button("Reject this brief",key="reject_report",icon=":material/close:")
     if approve or reject:
         advance(Command(resume={"approve":bool(approve and reviewed),"note":note}))
         st.rerun()

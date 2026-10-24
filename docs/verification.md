@@ -43,3 +43,9 @@ At the last credential check, neither Tavily nor model credentials was configure
 ## Remaining acceptance checks
 
 Configure credentials, complete one live run, manually inspect official source terms, record the model and elapsed time, review the final narrative, publish the repository with intended access, record a five-minute-or-less demo and submit the form. Software checks are not a research-quality benchmark or evidence of business uplift.
+
+## Visual redesign verification
+
+The requested navy sidebar, blue-gray workspace and teal accents were implemented through native Streamlit themes, bordered cards, badges and compact typography. Comparison, opportunity and review sections use distinct containers. The four summary cards remain in a compact row in the narrow app preview, while the sidebar collapses automatically on small screens.
+
+After the final redesign changes, the full suite passed again: **19 tests in 6.739 seconds**. Browser inspection confirmed the navy research panel, compact metrics, dark comparison header, opportunity cards and review state. Built-in pre-approval CSV export controls remained absent (browser count: zero). No live provider calls or credential changes were performed.

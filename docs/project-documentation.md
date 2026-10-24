@@ -73,6 +73,7 @@ These are the actual development instructions, not invented iterations. Codex as
 4. Added a recorded-evidence mode to demonstrate the graph and approval gates without credentials, while keeping that mode distinct from a live model run.
 5. Added source-domain, quote and numeric consistency checks, bounded retries, explicit unknowns and a simulated outage.
 6. Added automated graph and Streamlit interaction checks. See docs/verification.md for final observed results; do not claim live provider success until the live smoke check has passed.
+7. Refined the interface after user feedback: navy research sidebar, blue-gray workspace, teal actions, compact summary cards, clearer comparison and opportunity sections, and expandable caveats.
 
 ## Evaluation approach
 
