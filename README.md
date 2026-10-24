@@ -33,6 +33,8 @@ Never paste keys into chat, screenshots, GitHub or the project document. `.env` 
 
 Choose **Live research** before starting, enter a home institution/domain/market, and discover candidates. Confirm or replace all three names and official domains. A failed discovery permits manual selection. Read-only search is autonomous after confirmation; downloads remain locked until final approval.
 
+Streamlit's built-in table CSV/clipboard export controls are disabled; use the approved briefing/evidence downloads. Approval is a workflow control, not a data-secrecy boundary: drafts are visible for review and can still be read or captured.
+
 ## Architecture
 
 ```mermaid

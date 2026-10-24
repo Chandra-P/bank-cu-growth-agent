@@ -4,7 +4,7 @@
 
 Command: `python -m unittest discover -s tests -v`
 
-Result: **19 tests passed**, 23.982 seconds in the observed full run. Python 3.12.10 on Windows. Streamlit's AppTest prints a benign “missing ScriptRunContext” warning for its main test thread; no app exception was reported.
+Result: **19 tests passed**, 6.565 seconds in the final full run after the browser export-control fix (the preceding full run passed in 23.982 seconds). Python 3.12.10 on Windows. Streamlit's AppTest prints a benign “missing ScriptRunContext” warning for its main test thread; no app exception was reported.
 
 Coverage includes:
 
@@ -31,6 +31,10 @@ Both completed and generated Markdown and JSON under samples/. These are explici
 ## Review
 
 A separate read-only reviewer inspected the design and implementation and found no actionable blocker. The review confirmed the disclosed limitations: lexical evidence checks do not prove semantic correctness, live provider behavior remains unverified, and in-memory checkpoints disappear on restart. The reviewer's separately launched test run was not used as passing evidence; the completed main-session run above is the evidence.
+
+Browser inspection found a Streamlit table-toolbar CSV export path before approval. A browser assertion reproduced it (one pre-approval CSV button, expected zero). Built-in table export/copy controls were then disabled using client.disableDataExport, preserving only the explicitly approved Markdown/JSON downloads. The same browser assertion then passed with zero CSV export buttons. This is a workflow guard, not prevention of screenshots or developer-tool access to displayed draft data.
+
+The local Streamlit server started at http://127.0.0.1:8501. Its health endpoint returned HTTP 200. Browser interaction completed discovery, competitor confirmation and report generation to the human review gate; the rendered report showed four institution profiles and three hypotheses. A preview screenshot was saved beside the submission ZIP.
 
 ## Live status
 

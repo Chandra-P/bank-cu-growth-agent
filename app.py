@@ -17,6 +17,8 @@ from growth.report import export_bundle
 ROOT = Path(__file__).resolve().parent
 load_dotenv(ROOT / ".env", override=True)
 st.set_page_config(page_title="FI growth intelligence", page_icon=":material/account_balance:", layout="wide")
+# Tables otherwise expose an independent CSV/clipboard path before review.
+st.set_option("client.disableDataExport", True)
 
 for key, value in {"graph":None, "config":None, "result":None, "run_error":None}.items():
     st.session_state.setdefault(key,value)
