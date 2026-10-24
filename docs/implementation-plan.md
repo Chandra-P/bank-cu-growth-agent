@@ -38,4 +38,4 @@ Files: app.py, .streamlit/config.toml, README.md, .env.example, requirements.txt
 - [x] Write failing Streamlit AppTest smoke/workflow tests.
 - [x] Implement the app, instructions and truthful submission documentation.
 - [x] Verify UI and graph suite; review the whole implementation for unsupported claims, secrets and gate bypasses.
-- [ ] Package a clean ZIP without credentials, caches or virtual environments; record verification results.
+- [x] Package a clean ZIP without credentials, caches or virtual environments; record verification results.
