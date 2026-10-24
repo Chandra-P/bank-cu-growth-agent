@@ -1,0 +1,41 @@
+{
+  "description": "Recorded public-source excerpts collected with web research on October 24, 2026. Curated extraction and hypotheses replayed without live Tavily or model calls. Short noncontiguous snippets are separated by newlines. This is not a recorded Tavily response or a live model evaluation.",
+  "market": "Charlotte, North Carolina",
+  "home": {"name": "Truliant Federal Credit Union", "domain": "truliantfcu.org", "reason": "Illustrative home institution with Charlotte branches"},
+  "competitors": [
+    {"name": "Truist", "domain": "truist.com", "reason": "Illustrative regional bank alternative; reviewer confirms local relevance"},
+    {"name": "Bank of America", "domain": "bankofamerica.com", "reason": "Illustrative national bank alternative; reviewer confirms local relevance"},
+    {"name": "Skyla Credit Union", "domain": "skylacu.com", "reason": "Illustrative credit union alternative; membership eligibility needs confirmation"}
+  ],
+  "sources": [
+    {"id": "demo-truliant", "title": "Truliant checking comparison", "url": "https://www.truliantfcu.org/bank/checking-comparison", "excerpt": "Essentials Plus\nMonthly Service Fee\n$7.50 or $0\n$500+ in total qualifying direct deposits\nMinimum Opening Deposit\n$25", "retrieved_at": "2026-10-24", "collection": "Recorded official-page excerpts; curated October 24, 2026"},
+    {"id": "demo-truist", "title": "Truist checking accounts", "url": "https://www.truist.com/checking", "excerpt": "Truist One® Checking\nMinimum opening deposit\n$50\nMonthly maintenance fee\n$12 or $0\nthere are options to waive the monthly maintenance fee.", "retrieved_at": "2026-10-24", "collection": "Recorded official-page excerpts; curated October 24, 2026"},
+    {"id": "demo-bofa", "title": "Bank of America Advantage Banking", "url": "https://www.bankofamerica.com/deposits/checking/advantage-banking/", "excerpt": "Advantage Plus\nBanking\n$12 or $0\nMonthly maintenance fee - Advantage Plus Banking\nYou maintain a minimum daily balance of $1,500 or more", "retrieved_at": "2026-10-24", "collection": "Recorded official-page excerpts; curated October 24, 2026"},
+    {"id": "demo-skyla", "title": "Skyla Simply Checking", "url": "https://www.skylacu.com/bank/checking/simply-checking", "excerpt": "Simply Checking\n$25 is all it takes to open your account.\nno minimum balance\nno monthly maintenance fees\nWith your enrollment in eStatements", "retrieved_at": "2026-10-24", "collection": "Recorded official-page excerpts; curated October 24, 2026"}
+  ],
+  "facts": {
+    "truliantfcu.org": {
+      "product_name": {"value": "Essentials Plus", "quote": "Essentials Plus"},
+      "monthly_fee": {"value": "$7.50 or $0; waiver conditions apply", "quote": "Monthly Service Fee\n$7.50 or $0"},
+      "opening_deposit": {"value": "$25", "quote": "Minimum Opening Deposit\n$25"},
+      "fee_waiver": {"value": "One route: $500+ in total qualifying direct deposits; other routes require review", "quote": "$500+ in total qualifying direct deposits"}
+    },
+    "truist.com": {
+      "product_name": {"value": "Truist One Checking", "quote": "Truist One® Checking"},
+      "monthly_fee": {"value": "$12 or $0; waiver conditions apply", "quote": "Monthly maintenance fee\n$12 or $0"},
+      "opening_deposit": {"value": "$50", "quote": "Minimum opening deposit\n$50"}
+    },
+    "bankofamerica.com": {
+      "product_name": {"value": "Advantage Plus Banking", "quote": "Advantage Plus\nBanking"},
+      "monthly_fee": {"value": "$12 or $0; waiver conditions apply", "quote": "$12 or $0\nMonthly maintenance fee - Advantage Plus Banking"},
+      "fee_waiver": {"value": "One route: $1,500 or more minimum daily balance; other routes require review", "quote": "You maintain a minimum daily balance of $1,500 or more"}
+    },
+    "skylacu.com": {
+      "product_name": {"value": "Simply Checking", "quote": "Simply Checking"},
+      "monthly_fee": {"value": "No monthly maintenance fees with enrollment in eStatements", "quote": "no monthly maintenance fees\nWith your enrollment in eStatements"},
+      "opening_deposit": {"value": "$25", "quote": "$25 is all it takes to open your account."},
+      "minimum_balance": {"value": "No minimum balance", "quote": "no minimum balance"},
+      "fee_waiver": {"value": "Enrollment in eStatements", "quote": "no monthly maintenance fees\nWith your enrollment in eStatements"}
+    }
+  }
+}

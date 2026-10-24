@@ -1,0 +1,541 @@
+{
+  "request": {
+    "home": {
+      "name": "Truliant Federal Credit Union",
+      "domain": "truliantfcu.org",
+      "reason": "Illustrative home institution with Charlotte branches"
+    },
+    "market": "Charlotte, North Carolina",
+    "product": "Consumer checking accounts"
+  },
+  "run_id": "4b43bcf1-e346-45ed-9d98-be1c01d409f1",
+  "mode": "recorded",
+  "created_at": "2026-10-24T16:30:23.341304+00:00",
+  "status": "approved",
+  "approval": {
+    "approved": true,
+    "run_id": "4b43bcf1-e346-45ed-9d98-be1c01d409f1",
+    "note": "Scripted recorded-evidence demonstration approval. Not a real human review or live provider evaluation.",
+    "at": "2026-10-24T16:30:23.792406+00:00"
+  },
+  "competitors": [
+    {
+      "name": "Truist",
+      "domain": "truist.com",
+      "reason": "Illustrative regional bank alternative; reviewer confirms local relevance"
+    },
+    {
+      "name": "Bank of America",
+      "domain": "bankofamerica.com",
+      "reason": "Illustrative national bank alternative; reviewer confirms local relevance"
+    },
+    {
+      "name": "Skyla Credit Union",
+      "domain": "skylacu.com",
+      "reason": "Illustrative credit union alternative; membership eligibility needs confirmation"
+    }
+  ],
+  "profiles": [
+    {
+      "institution": {
+        "name": "Truliant Federal Credit Union",
+        "domain": "truliantfcu.org",
+        "reason": "Illustrative home institution with Charlotte branches"
+      },
+      "facts": {
+        "product_name": {
+          "value": "Essentials Plus",
+          "source_id": "demo-truliant",
+          "quote": "Essentials Plus",
+          "status": "Source-supported"
+        },
+        "monthly_fee": {
+          "value": "$7.50 or $0; waiver conditions apply",
+          "source_id": "demo-truliant",
+          "quote": "Monthly Service Fee\n$7.50 or $0",
+          "status": "Source-supported"
+        },
+        "opening_deposit": {
+          "value": "$25",
+          "source_id": "demo-truliant",
+          "quote": "Minimum Opening Deposit\n$25",
+          "status": "Source-supported"
+        },
+        "minimum_balance": {
+          "value": "Not verified",
+          "source_id": null,
+          "quote": null,
+          "status": "Not verified"
+        },
+        "fee_waiver": {
+          "value": "One route: $500+ in total qualifying direct deposits; other routes require review",
+          "source_id": "demo-truliant",
+          "quote": "$500+ in total qualifying direct deposits",
+          "status": "Source-supported"
+        },
+        "acquisition_bonus": {
+          "value": "Not verified",
+          "source_id": null,
+          "quote": null,
+          "status": "Not verified"
+        },
+        "eligibility": {
+          "value": "Not verified",
+          "source_id": null,
+          "quote": null,
+          "status": "Not verified"
+        },
+        "positioning": {
+          "value": "Not verified",
+          "source_id": null,
+          "quote": null,
+          "status": "Not verified"
+        },
+        "recent_news": {
+          "value": "Not verified",
+          "source_id": null,
+          "quote": null,
+          "status": "Not verified"
+        }
+      },
+      "follow_up": "checking membership eligibility acquisition offer conditions",
+      "gaps": [
+        "Ongoing balance requirement",
+        "Acquisition offer and conditions",
+        "Account / membership eligibility",
+        "Positioning / core features",
+        "Recent news"
+      ]
+    },
+    {
+      "institution": {
+        "name": "Truist",
+        "domain": "truist.com",
+        "reason": "Illustrative regional bank alternative; reviewer confirms local relevance"
+      },
+      "facts": {
+        "product_name": {
+          "value": "Truist One Checking",
+          "source_id": "demo-truist",
+          "quote": "Truist One® Checking",
+          "status": "Source-supported"
+        },
+        "monthly_fee": {
+          "value": "$12 or $0; waiver conditions apply",
+          "source_id": "demo-truist",
+          "quote": "Monthly maintenance fee\n$12 or $0",
+          "status": "Source-supported"
+        },
+        "opening_deposit": {
+          "value": "$50",
+          "source_id": "demo-truist",
+          "quote": "Minimum opening deposit\n$50",
+          "status": "Source-supported"
+        },
+        "minimum_balance": {
+          "value": "Not verified",
+          "source_id": null,
+          "quote": null,
+          "status": "Not verified"
+        },
+        "fee_waiver": {
+          "value": "Not verified",
+          "source_id": null,
+          "quote": null,
+          "status": "Not verified"
+        },
+        "acquisition_bonus": {
+          "value": "Not verified",
+          "source_id": null,
+          "quote": null,
+          "status": "Not verified"
+        },
+        "eligibility": {
+          "value": "Not verified",
+          "source_id": null,
+          "quote": null,
+          "status": "Not verified"
+        },
+        "positioning": {
+          "value": "Not verified",
+          "source_id": null,
+          "quote": null,
+          "status": "Not verified"
+        },
+        "recent_news": {
+          "value": "Not verified",
+          "source_id": null,
+          "quote": null,
+          "status": "Not verified"
+        }
+      },
+      "follow_up": "checking membership eligibility acquisition offer conditions",
+      "gaps": [
+        "Ongoing balance requirement",
+        "Fee waiver conditions",
+        "Acquisition offer and conditions",
+        "Account / membership eligibility",
+        "Positioning / core features",
+        "Recent news"
+      ]
+    },
+    {
+      "institution": {
+        "name": "Bank of America",
+        "domain": "bankofamerica.com",
+        "reason": "Illustrative national bank alternative; reviewer confirms local relevance"
+      },
+      "facts": {
+        "product_name": {
+          "value": "Advantage Plus Banking",
+          "source_id": "demo-bofa",
+          "quote": "Advantage Plus\nBanking",
+          "status": "Source-supported"
+        },
+        "monthly_fee": {
+          "value": "$12 or $0; waiver conditions apply",
+          "source_id": "demo-bofa",
+          "quote": "$12 or $0\nMonthly maintenance fee - Advantage Plus Banking",
+          "status": "Source-supported"
+        },
+        "opening_deposit": {
+          "value": "Not verified",
+          "source_id": null,
+          "quote": null,
+          "status": "Not verified"
+        },
+        "minimum_balance": {
+          "value": "Not verified",
+          "source_id": null,
+          "quote": null,
+          "status": "Not verified"
+        },
+        "fee_waiver": {
+          "value": "One route: $1,500 or more minimum daily balance; other routes require review",
+          "source_id": "demo-bofa",
+          "quote": "You maintain a minimum daily balance of $1,500 or more",
+          "status": "Source-supported"
+        },
+        "acquisition_bonus": {
+          "value": "Not verified",
+          "source_id": null,
+          "quote": null,
+          "status": "Not verified"
+        },
+        "eligibility": {
+          "value": "Not verified",
+          "source_id": null,
+          "quote": null,
+          "status": "Not verified"
+        },
+        "positioning": {
+          "value": "Not verified",
+          "source_id": null,
+          "quote": null,
+          "status": "Not verified"
+        },
+        "recent_news": {
+          "value": "Not verified",
+          "source_id": null,
+          "quote": null,
+          "status": "Not verified"
+        }
+      },
+      "follow_up": "checking membership eligibility acquisition offer conditions",
+      "gaps": [
+        "Opening deposit",
+        "Ongoing balance requirement",
+        "Acquisition offer and conditions",
+        "Account / membership eligibility",
+        "Positioning / core features",
+        "Recent news"
+      ]
+    },
+    {
+      "institution": {
+        "name": "Skyla Credit Union",
+        "domain": "skylacu.com",
+        "reason": "Illustrative credit union alternative; membership eligibility needs confirmation"
+      },
+      "facts": {
+        "product_name": {
+          "value": "Not verified",
+          "source_id": null,
+          "quote": null,
+          "status": "Not verified"
+        },
+        "monthly_fee": {
+          "value": "Not verified",
+          "source_id": null,
+          "quote": null,
+          "status": "Not verified"
+        },
+        "opening_deposit": {
+          "value": "Not verified",
+          "source_id": null,
+          "quote": null,
+          "status": "Not verified"
+        },
+        "minimum_balance": {
+          "value": "Not verified",
+          "source_id": null,
+          "quote": null,
+          "status": "Not verified"
+        },
+        "fee_waiver": {
+          "value": "Not verified",
+          "source_id": null,
+          "quote": null,
+          "status": "Not verified"
+        },
+        "acquisition_bonus": {
+          "value": "Not verified",
+          "source_id": null,
+          "quote": null,
+          "status": "Not verified"
+        },
+        "eligibility": {
+          "value": "Not verified",
+          "source_id": null,
+          "quote": null,
+          "status": "Not verified"
+        },
+        "positioning": {
+          "value": "Not verified",
+          "source_id": null,
+          "quote": null,
+          "status": "Not verified"
+        },
+        "recent_news": {
+          "value": "Not verified",
+          "source_id": null,
+          "quote": null,
+          "status": "Not verified"
+        }
+      },
+      "follow_up": "",
+      "gaps": [
+        "Product",
+        "Monthly maintenance fee",
+        "Opening deposit",
+        "Ongoing balance requirement",
+        "Fee waiver conditions",
+        "Acquisition offer and conditions",
+        "Account / membership eligibility",
+        "Positioning / core features",
+        "Recent news"
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "id": "demo-truliant",
+      "title": "Truliant checking comparison",
+      "url": "https://www.truliantfcu.org/bank/checking-comparison",
+      "excerpt": "Essentials Plus\nMonthly Service Fee\n$7.50 or $0\n$500+ in total qualifying direct deposits\nMinimum Opening Deposit\n$25",
+      "retrieved_at": "2026-10-24",
+      "collection": "Recorded official-page excerpts; curated October 24, 2026"
+    },
+    {
+      "id": "demo-truist",
+      "title": "Truist checking accounts",
+      "url": "https://www.truist.com/checking",
+      "excerpt": "Truist One® Checking\nMinimum opening deposit\n$50\nMonthly maintenance fee\n$12 or $0\nthere are options to waive the monthly maintenance fee.",
+      "retrieved_at": "2026-10-24",
+      "collection": "Recorded official-page excerpts; curated October 24, 2026"
+    },
+    {
+      "id": "demo-bofa",
+      "title": "Bank of America Advantage Banking",
+      "url": "https://www.bankofamerica.com/deposits/checking/advantage-banking/",
+      "excerpt": "Advantage Plus\nBanking\n$12 or $0\nMonthly maintenance fee - Advantage Plus Banking\nYou maintain a minimum daily balance of $1,500 or more",
+      "retrieved_at": "2026-10-24",
+      "collection": "Recorded official-page excerpts; curated October 24, 2026"
+    },
+    {
+      "id": "demo-skyla",
+      "title": "Skyla Simply Checking",
+      "url": "https://www.skylacu.com/bank/checking/simply-checking",
+      "excerpt": "Simply Checking\n$25 is all it takes to open your account.\nno minimum balance\nno monthly maintenance fees\nWith your enrollment in eStatements",
+      "retrieved_at": "2026-10-24",
+      "collection": "Recorded official-page excerpts; curated October 24, 2026"
+    }
+  ],
+  "hypotheses": [
+    {
+      "title": "Make the path to a waived monthly fee easy to understand",
+      "rationale": "The collected checking pages present fees alongside qualifying conditions. Clearer explanations may reduce uncertainty during account selection; these excerpts do not establish which institution is cheapest for every customer.",
+      "source_ids": [
+        "demo-truliant",
+        "demo-truist",
+        "demo-bofa"
+      ],
+      "experiment": "Compare the current checking landing page with a plain-language fee-and-waiver explanation. Use only terms approved by the product owner.",
+      "success_metric": "Compare application-start rate and completed funded-account rate between variants; also monitor misunderstanding-related support contacts.",
+      "caveat": "Hypothesis, not measured uplift. Review all waiver alternatives and current disclosures before testing."
+    },
+    {
+      "title": "Test an opening-deposit explanation in the switching journey",
+      "rationale": "Recorded product pages describe opening funding requirements. Explaining opening funding separately from ongoing balance requirements may help prospective members complete an application.",
+      "source_ids": [
+        "demo-truliant",
+        "demo-truist"
+      ],
+      "experiment": "Add a short opening-funding checklist before the application handoff; compare against the existing journey.",
+      "success_metric": "Measure funded accounts per completed application and abandonment at the funding step.",
+      "caveat": "No evidence here identifies the actual cause of abandonment. Validate the journey with users and confirm membership eligibility."
+    },
+    {
+      "title": "Test total-value messaging alongside fee transparency",
+      "rationale": "The collected pages show different checking terms and conditions. Test whether an audience-specific explanation of approved benefits improves acquisition quality rather than assuming a lower headline fee wins.",
+      "source_ids": [
+        "demo-truliant",
+        "demo-truist"
+      ],
+      "experiment": "Interview prospects, then compare approved benefit-led and fee-led messaging with the same offer and audience.",
+      "success_metric": "Measure funded-account conversion and subsequent primary-account activation; define activation before the test.",
+      "caveat": "These excerpts do not establish feature superiority, customer preferences, campaign economics or expected growth."
+    }
+  ],
+  "warnings": [
+    "Skyla Credit Union: search unavailable in round 1; unsupported fields remain Not verified."
+  ],
+  "trace": [
+    {
+      "action": "discovery:search",
+      "attempt": 1,
+      "outcome": "ok"
+    },
+    {
+      "action": "discovery:agent",
+      "attempt": 1,
+      "outcome": "ok"
+    },
+    {
+      "action": "search:truliantfcu.org:1",
+      "attempt": 1,
+      "outcome": "ok"
+    },
+    {
+      "action": "extract:truliantfcu.org",
+      "attempt": 1,
+      "outcome": "ok"
+    },
+    {
+      "action": "evidence:truliantfcu.org",
+      "outcome": "checked",
+      "supported": 4,
+      "unknown": 5,
+      "next": "follow-up"
+    },
+    {
+      "action": "search:truliantfcu.org:2",
+      "attempt": 1,
+      "outcome": "ok"
+    },
+    {
+      "action": "extract:truliantfcu.org",
+      "attempt": 1,
+      "outcome": "ok"
+    },
+    {
+      "action": "evidence:truliantfcu.org",
+      "outcome": "checked",
+      "supported": 4,
+      "unknown": 5,
+      "next": "next institution"
+    },
+    {
+      "action": "search:truist.com:1",
+      "attempt": 1,
+      "outcome": "ok"
+    },
+    {
+      "action": "extract:truist.com",
+      "attempt": 1,
+      "outcome": "ok"
+    },
+    {
+      "action": "evidence:truist.com",
+      "outcome": "checked",
+      "supported": 3,
+      "unknown": 6,
+      "next": "follow-up"
+    },
+    {
+      "action": "search:truist.com:2",
+      "attempt": 1,
+      "outcome": "ok"
+    },
+    {
+      "action": "extract:truist.com",
+      "attempt": 1,
+      "outcome": "ok"
+    },
+    {
+      "action": "evidence:truist.com",
+      "outcome": "checked",
+      "supported": 3,
+      "unknown": 6,
+      "next": "next institution"
+    },
+    {
+      "action": "search:bankofamerica.com:1",
+      "attempt": 1,
+      "outcome": "ok"
+    },
+    {
+      "action": "extract:bankofamerica.com",
+      "attempt": 1,
+      "outcome": "ok"
+    },
+    {
+      "action": "evidence:bankofamerica.com",
+      "outcome": "checked",
+      "supported": 3,
+      "unknown": 6,
+      "next": "follow-up"
+    },
+    {
+      "action": "search:bankofamerica.com:2",
+      "attempt": 1,
+      "outcome": "ok"
+    },
+    {
+      "action": "extract:bankofamerica.com",
+      "attempt": 1,
+      "outcome": "ok"
+    },
+    {
+      "action": "evidence:bankofamerica.com",
+      "outcome": "checked",
+      "supported": 3,
+      "unknown": 6,
+      "next": "next institution"
+    },
+    {
+      "action": "search:skylacu.com:1",
+      "attempt": 1,
+      "outcome": "failed",
+      "error_type": "TimeoutError"
+    },
+    {
+      "action": "search:skylacu.com:1",
+      "attempt": 2,
+      "outcome": "failed",
+      "error_type": "TimeoutError"
+    },
+    {
+      "action": "evidence:skylacu.com",
+      "outcome": "checked",
+      "supported": 0,
+      "unknown": 9,
+      "next": "next institution"
+    },
+    {
+      "action": "analysis:agent",
+      "attempt": 1,
+      "outcome": "ok"
+    }
+  ]
+}
