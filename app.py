@@ -283,6 +283,25 @@ if status == "awaiting competitors":
         activity_panel(result)
     st.stop()
 
+with st.container(border=True, key='takeaway_card'):
+    st.subheader('Strategist takeaway')
+    st.caption('CLIENT GOAL / PROBLEM · provided by the strategist')
+    client_goal = result['request'].get('client_brief', '').strip()
+    if client_goal:
+        st.info(markdown_text(client_goal), icon=':material/target:')
+    else:
+        st.warning('Client goal needs confirmation.', icon=':material/help:')
+    takeaway = result.get('strategist_takeaway')
+    if takeaway:
+        st.markdown('**Research finding:** '+markdown_text(takeaway['finding']))
+        st.markdown('**Strategic implication:** '+markdown_text(takeaway['implication']))
+        st.markdown('**Client validation question:** '+markdown_text(takeaway['client_question']))
+        st.caption('Evidence: '+', '.join(takeaway['source_ids']))
+    else:
+        st.info('A supported takeaway is unavailable; review the comparison and gaps.')
+    if result['mode']=='recorded':
+        st.caption('Curated examples are not personalized to the entered client context. Live mode uses the client brief.')
+
 profiles = result.get("profiles",[])
 facts = [f for p in profiles for f in p["facts"].values()]
 supported = sum(f["status"] == "Source-supported" for f in facts)
@@ -295,7 +314,7 @@ with cols[1].container(border=True, key='kpi_evidence'):
     st.metric("Evidence",f"{supported} / {len(facts)}",help="Source-supported fields out of all compared fields.")
 with cols[2].container(border=True, key='kpi_hypotheses'):
     st.badge('CAMPAIGN PLANNING', color='orange', icon=':material/campaign:')
-    st.metric("Hypotheses",str(len(result["hypotheses"])))
+    st.metric("Campaign concepts",str(len(result["hypotheses"])))
 with cols[3].container(border=True, key='kpi_cost'):
     totals = summarize(result.get('usage', []))
     st.badge('AI USAGE', color='violet', icon=':material/query_stats:')
@@ -304,20 +323,6 @@ with cols[3].container(border=True, key='kpi_cost'):
 
 brief, evidence, benchmarks, revisions, trace, method = st.tabs(["Comparison & opportunities","Evidence & gaps","Benchmarks","Review & revision","Agent activity & costs","How it works"])
 with brief:
-    with st.container(border=True, key='takeaway_card'):
-        st.subheader('Strategist takeaway')
-        st.caption('CLIENT CONTEXT · provided by the strategist')
-        st.write(markdown_text(result['request'].get('client_brief') or 'Not provided; confirm the client goal and problem.'))
-        takeaway = result.get('strategist_takeaway')
-        if takeaway:
-            st.markdown('**Research finding:** '+markdown_text(takeaway['finding']))
-            st.markdown('**Strategic implication:** '+markdown_text(takeaway['implication']))
-            st.markdown('**Client validation question:** '+markdown_text(takeaway['client_question']))
-            st.caption('Evidence: '+', '.join(takeaway['source_ids']))
-        else:
-            st.info('A supported takeaway is unavailable; review the comparison and gaps.')
-        if result['mode']=='recorded':
-            st.caption('Curated examples are not personalized to the entered client context. Live mode uses the client brief.')
     with st.container(border=True,key="comparison_card"):
         st.badge("MARKET SNAPSHOT",icon=":material/compare_arrows:",color="blue")
         st.subheader("How the checking offers compare")
@@ -330,7 +335,7 @@ with brief:
     opportunity_columns = st.columns(3, gap="medium")
     for i,h in enumerate(result["hypotheses"],1):
         with opportunity_columns[(i-1) % 3].container(border=True,key=f"opportunity_card_{i}"):
-            st.badge(f"OPPORTUNITY {i:02d}",icon=":material/experiment:",color="blue")
+            st.badge(f"CAMPAIGN CONCEPT {i:02d}",icon=":material/experiment:",color="blue")
             st.markdown(f"#### {i}. {markdown_text(h['title'])}")
             st.write(markdown_text(h["rationale"]))
             st.markdown('**Audience:** '+markdown_text(h.get('audience','To confirm')))

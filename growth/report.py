@@ -25,14 +25,15 @@ def cell(text):
 
 def render_brief(state):
     request = state["request"]
-    mode = "RECORDED EVIDENCE DEMO — curated extraction and hypotheses; no live Tavily or model calls" if state["mode"] == "recorded" else "LIVE RESEARCH — Tavily search and model-assisted analysis"
+    mode = "RECORDED EVIDENCE DEMO — curated extraction and campaign concepts; no live Tavily or model calls" if state["mode"] == "recorded" else "LIVE RESEARCH — Tavily search and model-assisted analysis"
     approval = "Approved for export" if state.get("approved") else "Draft — human review required"
-    lines = [f"# Checking growth intelligence", f"**{request['home']['name']} · {request['market']}**", f"{mode}", f"Run: `{state['run_id']}` · Created: {state['created_at']}", f"Status: {approval}", "", "Source-supported means an official-domain excerpt supports the extracted claim. It is not independent verification. Search snippets may be incomplete or stale. Not verified never means zero or no offer. Hypotheses are inference for human review.", "", "## Checking comparison", ""]
+    lines = [f"# Checking growth intelligence", f"**{request['home']['name']} · {request['market']}**", f"{mode}", f"Run: `{state['run_id']}` · Created: {state['created_at']}", f"Status: {approval}", "", "Source-supported means an official-domain excerpt supports the extracted claim. It is not independent verification. Search snippets may be incomplete or stale. Not verified never means zero or no offer. Campaign concepts are hypotheses for human review.", ""]
     profiles = state.get("profiles",[])
-    lines += ['', '## Client discussion context', markdown_text(request.get('client_brief') or 'Not provided; confirm goals with the client.')]
+    lines += ['', '## Client goal or problem', markdown_text(request.get('client_brief', '').strip() or 'Client goal needs confirmation.')]
     takeaway = state.get('strategist_takeaway')
     if takeaway:
         lines += ['', '## Strategist takeaway', markdown_text(takeaway['finding']), '**Implication:** '+markdown_text(takeaway['implication']), '**Client validation question:** '+markdown_text(takeaway['client_question']), '**Evidence:** '+', '.join(takeaway['source_ids'])]
+    lines += ["", "## Checking comparison", ""]
     lines.append("| Field | " + " | ".join(cell(p["institution"]["name"]) for p in profiles) + " |")
     lines.append("| --- | " + " | ".join("---" for _ in profiles) + " |")
     for key,label in comparison_fields(profiles):
@@ -44,7 +45,7 @@ def render_brief(state):
                 value += f" [{fact['source_id']}]"
             values.append(value)
         lines.append("| " + label + " | " + " | ".join(values) + " |")
-    lines += ["", "## Growth hypotheses — inference, not measured outcomes", ""]
+    lines += ["", "## Campaign concepts — hypotheses, not measured outcomes", ""]
     for i,h in enumerate(state.get("hypotheses",[]),1):
         lines += [f"### {i}. {markdown_text(h['title'])}", markdown_text(h["rationale"]), f"**Evidence:** {', '.join(h['source_ids'])}", f"**Experiment:** {markdown_text(h['experiment'])}", f"**Measure:** {markdown_text(h['success_metric'])}", f"**Limit:** {markdown_text(h['caveat'])}", ""]
         for field in ('audience','need_connection','message','channel_rationale','guardrail','client_question'):
