@@ -4,8 +4,13 @@ import re
 from .models import FACT_FIELDS
 
 
+def markdown_text(text):
+    """Keep financial dollar amounts literal in Markdown math renderers."""
+    return str(text).replace("$", "\\$")
+
+
 def cell(text):
-    return str(text).replace("|", " / ").replace("\n", " ")
+    return markdown_text(text).replace("|", " / ").replace("\n", " ")
 
 
 def render_brief(state):
@@ -27,7 +32,7 @@ def render_brief(state):
         lines.append("| " + label + " | " + " | ".join(values) + " |")
     lines += ["", "## Growth hypotheses — inference, not measured outcomes", ""]
     for i,h in enumerate(state.get("hypotheses",[]),1):
-        lines += [f"### {i}. {h['title']}", h["rationale"], f"**Evidence:** {', '.join(h['source_ids'])}", f"**Experiment:** {h['experiment']}", f"**Measure:** {h['success_metric']}", f"**Limit:** {h['caveat']}", ""]
+        lines += [f"### {i}. {markdown_text(h['title'])}", markdown_text(h["rationale"]), f"**Evidence:** {', '.join(h['source_ids'])}", f"**Experiment:** {markdown_text(h['experiment'])}", f"**Measure:** {markdown_text(h['success_metric'])}", f"**Limit:** {markdown_text(h['caveat'])}", ""]
     lines += ["## Gaps and review notes", ""]
     for profile in profiles:
         if profile["gaps"]:

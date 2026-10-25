@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 from streamlit.testing.v1 import AppTest
@@ -7,6 +8,37 @@ from streamlit.testing.v1 import AppTest
 class AppTests(unittest.TestCase):
     def open(self):
         return AppTest.from_file(str(Path(__file__).resolve().parents[1] / "app.py"), default_timeout=30).run()
+
+    def test_live_never_uses_server_keys_and_requires_visitor_keys(self):
+        with patch.dict("os.environ", {"OPENAI_API_KEY":"server-openai-sentinel", "TAVILY_API_KEY":"server-tavily-sentinel"}):
+            app = self.open()
+            app.selectbox(key="mode").select("Live research").run()
+            self.assertEqual(app.text_input(key="visitor_openai_key").value, "")
+            self.assertEqual(app.text_input(key="visitor_tavily_key").value, "")
+            self.assertTrue(app.button(key="start_research").disabled)
+            app.text_input(key="visitor_openai_key").set_value("visitor-openai-sentinel").run()
+            self.assertTrue(app.button(key="start_research").disabled)
+            app.text_input(key="visitor_tavily_key").set_value("visitor-tavily-sentinel").run()
+            self.assertFalse(app.button(key="start_research").disabled)
+            other = self.open()
+            other.selectbox(key="mode").select("Live research").run()
+            self.assertEqual(other.text_input(key="visitor_openai_key").value, "")
+            self.assertTrue(other.button(key="start_research").disabled)
+
+    def test_clear_keys_also_discards_graph_and_report(self):
+        app = self.open()
+        app.text_input(key="visitor_openai_key").set_value("visitor-openai-sentinel").run()
+        app.text_input(key="visitor_tavily_key").set_value("visitor-tavily-sentinel").run()
+        app.button(key="start_research").click().run()
+        self.assertIsNotNone(app.session_state["graph"])
+        app.button(key="clear_keys").click().run()
+        self.assertFalse(app.exception)
+        self.assertEqual(app.text_input(key="visitor_openai_key").value, "")
+        self.assertEqual(app.text_input(key="visitor_tavily_key").value, "")
+        self.assertIsNone(app.session_state["graph"])
+        self.assertIsNone(app.session_state["config"])
+        self.assertIsNone(app.session_state["result"])
+        self.assertFalse(app.get("download_button"))
 
     def test_demo_requires_confirmation_and_approval_before_download(self):
         app = self.open()

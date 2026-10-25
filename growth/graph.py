@@ -99,6 +99,11 @@ def build_graph(search, analyst):
             except ProviderError:
                 warnings.append(f"{institution.name}: extraction unavailable; review source pages manually.")
         grounded = {key:ground_fact(facts.get(key, Fact()), sources, institution) for key in FACT_FIELDS}
+        if grounded["product_name"].status != "Source-supported":
+            grounded = {key:Fact() for key in FACT_FIELDS}
+            follow_up = "identify one current consumer checking product by name and its official fee schedule, opening deposit and conditions" if sources else ""
+            if state["round"] == 1 or not sources:
+                warnings.append(f"{institution.name}: product identity could not be confirmed; comparison terms are withheld to avoid mixing products.")
         gaps = [FACT_FIELDS[k] for k,f in grounded.items() if f.status == "Not verified"]
         profile = Profile(institution=institution, facts=grounded, follow_up=follow_up if gaps else "", gaps=gaps)
         trace.append({"action":f"evidence:{institution.domain}", "outcome":"checked", "supported":len(FACT_FIELDS)-len(gaps), "unknown":len(gaps), "next":"follow-up" if profile.follow_up and state["round"] == 0 else "next institution"})

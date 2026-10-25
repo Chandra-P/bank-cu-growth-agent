@@ -16,24 +16,23 @@ python -m venv .venv
 
 If dependencies are already installed, run `python -m streamlit run app.py` or `./run.ps1`. On macOS/Linux, use `.venv/bin/python` in place of `.venv/Scripts/python.exe`.
 
-The default **Recorded evidence demo** needs no credentials. Click **Discover competitors**, **Confirm and research**, inspect the comparison/evidence/trace, acknowledge review, then **Approve and enable downloads**. The optional Skyla outage demonstrates a failed search, one retry, and explicit unknowns. No new API calls or LLM decisions occur in recorded mode; curated outputs exercise the same graph, grounding and approval logic.
+The default **Recorded evidence demo** needs no credentials. Click **Explore recorded demo**, **Confirm and research**, inspect the comparison/evidence/trace, acknowledge review, then **Approve and enable downloads**. The optional Skyla outage demonstrates a failed search, one retry, and explicit unknowns. No new API calls or LLM decisions occur in recorded mode; curated outputs exercise the same graph, grounding and approval logic.
 
 ## Enable live research
 
-Copy `.env.example` to `.env` in this folder and set:
+Enter your own OpenAI and Tavily API keys in the password-masked research-panel inputs. Select an available OpenAI model under **Model settings** (default `gpt-6-luna`, used in the Charlotte live test). The web app does not load `.env`, process environment keys, or Streamlit secrets. The OpenAI API endpoint is fixed; a visitor cannot redirect keys to another endpoint.
 
-```dotenv
-TAVILY_API_KEY=your-local-key
-OPENAI_API_KEY=your-local-model-provider-key
-MODEL_NAME=gpt-4.1-mini
-OPENAI_BASE_URL=
-```
+Keys travel to the app server and remain in that visitor's session memory and provider clients. They are not intentionally written to disk, reports, URLs or logs; no shared graph or credential cache is used. **Clear keys & session** clears inputs and discards the active graph, provider references and report. Closing a tab does not guarantee immediate memory cleanup. Use HTTPS when hosting and do not paste keys into chat or screenshots. Provider usage is charged to the visitor's account. Existing local `.env` files remain ignored and excluded from deployment bundles.
 
-Never paste keys into chat, screenshots, GitHub or the project document. `.env` is ignored by Git and excluded from the submission ZIP. Model availability depends on your provider/account. For a compatible cohort endpoint, set `OPENAI_BASE_URL`, use its key in `OPENAI_API_KEY`, and set `MODEL_NAME` to the provider's exact model ID. Support depends on a compatible chat-completions API returning JSON as prompted; test it before recording. Empty `OPENAI_BASE_URL` uses the model client's default endpoint. No extra model call to a cohort provider is mandatory in the supplied handout (“may use”).
+For GPT-5/GPT-6 and o-series reasoning model names, the client omits explicit temperature settings to avoid unsupported sampling parameters.
 
 Choose **Live research** before starting, enter a home institution/domain/market, and discover candidates. Confirm or replace all three names and official domains. A failed discovery permits manual selection. Read-only search is autonomous after confirmation; downloads remain locked until final approval.
 
 Streamlit's built-in table CSV/clipboard export controls are disabled; use the approved briefing/evidence downloads. Approval is a workflow control, not a data-secrecy boundary: drafts are visible for review and can still be read or captured.
+
+## Public deployment
+
+See [deployment instructions](docs/public-deployment.md). Option 3 from the Figma concepts is implemented with the existing responsive Streamlit layout: blue-gray canvas, cobalt actions, navy research panel, summary metrics and three opportunity cards. The mockup's static desktop positioning is adapted to native widgets and mobile stacking.
 
 ## Architecture
 
@@ -62,7 +61,7 @@ State holds the request, confirmed competitors, sources, grounded profiles, gaps
 
 Each institution gets up to two searches, five results per search, and one retry per remote operation. A full run makes at most nine logical searches (one discovery plus eight research) and ten logical model operations (one discovery, eight extractions, one analysis), each with at most two attempts. Search timeout is 20 seconds; model timeout is 35 seconds. Exhausted search/extraction failures produce explicit unknowns. Exhausted analysis failures produce a partial comparison and a warning, never an offline result silently substituted into live mode. Latency and costs vary; live performance is not guaranteed.
 
-Grounding checks enforce: known source ID, matching confirmed official domain, exact normalized quote match, and numeric values present in the quote. This is a lexical check; it does not prove semantic entailment, freshness or full disclosure coverage. Search snippets can omit conditions, offers and dates. Human reviewers should check the full official pages. The app does not certify compliance or execute campaigns.
+Grounding checks enforce: known source ID, matching confirmed official domain, exact normalized quote match, and numeric values present in the quote. Explicitly uncertain or ambiguous claims remain unverified. Product identity must be source-supported before an institution can supply comparison terms. Tavily requests cleaned full-page text, retaining up to 14,000 characters per source with a search-excerpt fallback. This is still a lexical check; it does not prove semantic entailment, freshness or full disclosure coverage. Collected text can omit conditions, offers and dates. Human reviewers should check the full official pages. The app does not certify compliance or execute campaigns.
 
 ## Test and reproduce
 

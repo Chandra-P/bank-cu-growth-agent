@@ -17,6 +17,8 @@ def normalized(text: str) -> str:
 
 
 def ground_fact(fact: Fact, sources: list[Source], institution: Institution) -> Fact:
+    if re.search(r"\bnot (?:verified|explicit|established|provided|confirmed|specified|stated|clear)\b|\bunclear\b|\bambiguous\b|\btruncat|\bno\b.{0,90}\bverified\b",normalized(fact.value)):
+        return Fact()
     source = next((s for s in sources if s.id == fact.source_id), None)
     if not source or not official_url(source.url, institution.domain) or not fact.quote or len(fact.quote.strip()) < 3:
         return Fact()
@@ -37,3 +39,10 @@ def confirm_competitors(home: Institution, competitors: list[Institution]) -> li
     if len(set(domains)) != 4 or len(set(names)) != 4:
         raise ValueError("Choose three distinct competitors, excluding the home institution.")
     return competitors
+
+
+def reviewed_competitor(candidate: dict, name: str, domain: str) -> dict:
+    institution = Institution(name=name, domain=domain)
+    unchanged = institution.name == candidate.get("name") and institution.domain == candidate.get("domain")
+    institution.reason = candidate.get("reason", "Selected by reviewer") if unchanged else "Manually selected by reviewer for this market."
+    return institution.model_dump()

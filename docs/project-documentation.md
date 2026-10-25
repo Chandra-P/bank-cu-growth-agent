@@ -51,7 +51,7 @@ At most two search rounds per institution, five returned sources per search and 
 
 ## Evidence and error handling
 
-A supported fact must reference a collected source on the confirmed official domain, include an exact whitespace-normalized excerpt match, and contain no numeric token absent from that quote. These checks catch source and amount fabrication but do not establish semantic truth or completeness. Source-supported means supported by the collected excerpt, not independently verified. Full source review is a human responsibility.
+A supported fact must reference a collected source on the confirmed official domain, include an exact whitespace-normalized excerpt match, and contain no numeric token absent from that quote. Explicit uncertainty is rejected, and all comparison terms are withheld when the selected product cannot be identified from source evidence. Live search requests fuller page text with a snippet fallback, capped at 14,000 characters per source. These checks catch source and amount fabrication but do not establish semantic truth or completeness. Source-supported means supported by the collected evidence, not independently verified. Full source review is a human responsibility.
 
 Search or extraction failures are retried once; after that the system retains partial evidence and marks unsupported fields Not verified. Analysis failures retain the comparison and flag missing hypotheses. Live mode never silently falls back to curated demo answers. API errors are sanitized so provider response bodies and credentials are not exposed in the UI or trace. Collected text is treated as data in model prompts; prompt injection remains a limitation, and the system has no external write tools.
 
@@ -89,6 +89,6 @@ Search snippets can omit conditions, contain stale terms or mix products. Quote 
 
 - GitHub repository: pending authenticated publication.
 - Demo recording: pending user recording, maximum five minutes.
-- Live provider verification: pending configured credentials and observed run.
+- Live provider verification: OpenAI and Tavily authenticated; a preliminary live run completed and prompted stricter source checks. See docs/verification.md for final QA results.
 
 The handout's provided solution documents were not consulted during this implementation. The user should review the app and narrative, add their own live-run observations, and ensure the recording accurately represents which mode is demonstrated.

@@ -1,44 +1,45 @@
 [theme]
 base = "light"
-primaryColor = "#087F83"
-backgroundColor = "#EAF0F6"
-secondaryBackgroundColor = "#DBE5EF"
-textColor = "#142B43"
-font = "sans serif"
+primaryColor = "#315DEB"
+backgroundColor = "#E8EFFB"
+secondaryBackgroundColor = "#F7FAFF"
+textColor = "#142D55"
+font = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
 baseFontSize = 15
 headingFontSizes = ["2.25rem", "1.65rem", "1.2rem", "1.05rem", "1rem", "0.9rem"]
 headingFontWeights = [650, 650, 600, 600, 600, 600]
-borderColor = "#C6D5E2"
+borderColor = "#CDD9EF"
 dataframeBorderColor = "#C6D5E2"
-dataframeHeaderBackgroundColor = "#142B43"
+dataframeHeaderBackgroundColor = "#172D64"
 dataframeHeaderTextColor = "#F3F8FC"
 baseRadius = "12px"
 buttonRadius = "8px"
 showWidgetBorder = true
 showSidebarBorder = false
-linkColor = "#086F76"
+linkColor = "#315DEB"
 linkUnderline = false
 greenColor = "#087F83"
 greenBackgroundColor = "#CBEAE7"
 greenTextColor = "#075B60"
-blueBackgroundColor = "#D8E6F3"
-blueTextColor = "#234A6C"
+blueColor = "#315DEB"
+blueBackgroundColor = "#DAE5FF"
+blueTextColor = "#244CB8"
 yellowBackgroundColor = "#F3EAD4"
 yellowTextColor = "#705318"
 
 [theme.sidebar]
-backgroundColor = "#102238"
-secondaryBackgroundColor = "#1D354E"
-textColor = "#ECF4FC"
-primaryColor = "#087F83"
-borderColor = "#35506B"
-linkColor = "#7BDDD2"
-codeBackgroundColor = "#1D354E"
-blueBackgroundColor = "#1D354E"
+backgroundColor = "#172D64"
+secondaryBackgroundColor = "#243E77"
+textColor = "#EAF0FC"
+primaryColor = "#315DEB"
+borderColor = "#476095"
+linkColor = "#CBD9FF"
+codeBackgroundColor = "#243E77"
+blueBackgroundColor = "#243E77"
 blueTextColor = "#D7E8F6"
 greenBackgroundColor = "#17464E"
 greenTextColor = "#91DED4"
-grayTextColor = "#B4C7D9"
+grayTextColor = "#C7D6F5"
 
 [server]
 headless = true
@@ -48,3 +49,4 @@ gatherUsageStats = false
 
 [client]
 disableDataExport = true
+showErrorDetails = "none"

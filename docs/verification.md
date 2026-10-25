@@ -38,7 +38,9 @@ The local Streamlit server started at http://127.0.0.1:8501. Its health endpoint
 
 ## Live status
 
-At the last credential check, neither Tavily nor model credentials was configured in the project .env or process environment. A live remote run has **not** been verified. GitHub CLI's saved authentication was expired at the last check; no repository has been published. The user requested keeping documentation local rather than publishing it to Drive.
+An OpenAI + Tavily live Charlotte run was completed on October 24, 2026 using `gpt-6-luna`: four identified products, 16/36 supported fields and three hypotheses, observed complete within about three minutes after competitor confirmation. Offers/news and several product conditions remained unverified. The run was left at final human review. This was a partial research result, not independent validation of all product terms.
+
+The public revision no longer loads saved credentials: each visitor must enter their own keys. GitHub CLI authentication remains expired and Streamlit Cloud is signed out, so no public deployment is claimed. Documentation remains local as requested.
 
 ## Remaining acceptance checks
 
@@ -49,3 +51,9 @@ Configure credentials, complete one live run, manually inspect official source t
 The requested navy sidebar, blue-gray workspace and teal accents were implemented through native Streamlit themes, bordered cards, badges and compact typography. Comparison, opportunity and review sections use distinct containers. The four summary cards remain in a compact row in the narrow app preview, while the sidebar collapses automatically on small screens.
 
 After the final redesign changes, the full suite passed again: **19 tests in 6.739 seconds**. Browser inspection confirmed the navy research panel, compact metrics, dark comparison header, opportunity cards and review state. Built-in pre-approval CSV export controls remained absent (browser count: zero). No live provider calls or credential changes were performed.
+
+## Option 3 and visitor credentials — October 24, 2026
+
+Implemented selected Modern Fintech concept with native Streamlit theme/layout, Inter typography, cobalt actions, blue-gray background, navy sidebar and three opportunity cards. Regression tests first failed because visitor inputs did not exist, then passed after implementation. Full suite: **26 tests passed in 9.804 seconds**; no cleanup exception in that run. Tests cover no environment credential fallback, both-key readiness, isolated browser-session inputs, clearing graph/config/results with keys, recorded workflow, approval gates and provider grounding/retries. No additional paid live call was made for the visual/public revision.
+
+A code review found no blocking credential-isolation issues. A mode-aware landing copy issue was corrected. Browser QA exercised the key-free recorded workflow to final review with approval unchecked. Container deployment files are prepared; the Docker image has not been built in this environment. Account sign-in remains necessary before publication.

@@ -81,3 +81,19 @@ class WorkflowTests(unittest.TestCase):
         result = graph.invoke(Command(resume={"competitors":result["candidates"]}), config)
         self.assertEqual(result["hypotheses"], [])
         self.assertTrue(result["warnings"])
+
+    def test_unidentified_product_cannot_supply_comparison_terms(self):
+        from growth.models import Fact
+        class MissingProductAnalyst(DemoAnalyst):
+            def extract(self,institution,sources):
+                result=super().extract(institution,sources)
+                if institution.domain == "skylacu.com":
+                    result.facts["product_name"]=Fact()
+                return result
+        graph=build_graph(DemoSearch(),MissingProductAnalyst())
+        config={"configurable":{"thread_id":"missing-product"},"recursion_limit":60}
+        result=graph.invoke(new_state(demo_request(),"recorded"),config)
+        result=graph.invoke(Command(resume={"competitors":result["candidates"]}),config)
+        skyla=next(p for p in result["profiles"] if p["institution"]["domain"] == "skylacu.com")
+        self.assertTrue(all(f["status"] == "Not verified" for f in skyla["facts"].values()))
+        self.assertTrue(any("product identity" in w.lower() for w in result["warnings"]))
