@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ipaddress
 import re
+from typing import Literal
 from urllib.parse import urlparse
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -44,6 +45,7 @@ class ResearchRequest(BaseModel):
     home: Institution
     market: str = Field(min_length=2, max_length=160)
     product: str = "Consumer checking accounts"
+    client_brief: str = Field(default="", max_length=2000)
 
     @field_validator("market")
     @classmethod
@@ -97,6 +99,20 @@ class Hypothesis(BaseModel):
     experiment: str = Field(max_length=700)
     success_metric: str = Field(max_length=400)
     caveat: str = Field(max_length=600)
+    audience: str = Field(default="To confirm with the client", max_length=350)
+    need_connection: str = Field(default="Confirm how this concept addresses the client's priority.", max_length=500)
+    message: str = Field(default="Develop using approved product terms.", max_length=350)
+    channels: list[Literal["Direct mail", "Display", "Paid social"]] = Field(default_factory=list, max_length=3)
+    channel_rationale: str = Field(default="Select channels after client discovery.", max_length=450)
+    guardrail: str = Field(default="Confirm product terms and campaign measurement before execution.", max_length=400)
+    client_question: str = Field(default="Which client goal or problem should this test address?", max_length=400)
+
+
+class StrategistTakeaway(BaseModel):
+    finding: str = Field(min_length=1, max_length=700)
+    implication: str = Field(min_length=1, max_length=700)
+    client_question: str = Field(min_length=1, max_length=400)
+    source_ids: list[str] = Field(min_length=1, max_length=8)
 
 
 class Discovery(BaseModel):
@@ -111,3 +127,28 @@ class Extraction(BaseModel):
 
 class Analysis(BaseModel):
     hypotheses: list[Hypothesis] = Field(min_length=3, max_length=3)
+    takeaway: StrategistTakeaway | None = None
+
+
+class Benchmark(BaseModel):
+    source_id: str
+    quote: str = Field(min_length=1, max_length=1000)
+    channel: Literal['Direct mail', 'Display', 'Paid social', 'Blended', 'Unspecified']
+    cpa: float | None = Field(default=None, gt=0, allow_inf_nan=False)
+    product: str = Field(max_length=200)
+    account_definition: str = Field(max_length=300)
+    geography_audience: str = Field(max_length=350)
+    period: str = Field(max_length=200)
+    costs_included: str = Field(max_length=400)
+    costs_excluded: str = Field(max_length=400)
+    comparability: str = Field(max_length=600)
+
+
+class BenchmarkResearch(BaseModel):
+    benchmarks: list[Benchmark] = Field(default_factory=list, max_length=5)
+    limitations: str = Field(max_length=1200)
+
+
+class RecommendationReview(BaseModel):
+    findings: list[str] = Field(min_length=1, max_length=6)
+    revision_instructions: str = Field(max_length=1500)

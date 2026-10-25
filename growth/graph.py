@@ -3,13 +3,15 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import TypedDict
 from uuid import uuid4
+import re
+from decimal import Decimal
 
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph import StateGraph, START, END
 from langgraph.types import interrupt
 
-from .evidence import confirm_competitors, ground_fact
-from .models import Institution, Source, Profile, Fact, FACT_FIELDS, ResearchRequest
+from .evidence import confirm_competitors, ground_fact, normalized
+from .models import Institution, Source, Profile, Fact, FACT_FIELDS, ResearchRequest, Analysis
 from .providers import bounded_call, ProviderError
 
 
@@ -30,12 +32,20 @@ class RunState(TypedDict, total=False):
     index: int
     round: int
     hypotheses: list[dict]
+    strategist_takeaway: dict | None
     warnings: list[str]
     trace: list[dict]
+    usage: list[dict]
+    benchmarks: dict
+    review_findings: list[str]
+    revision_instructions: str
+    revision_count: int
+    draft_hypotheses: list[dict]
+    draft_takeaway: dict | None
 
 
 def new_state(request: ResearchRequest, mode: str) -> RunState:
-    return dict(request=request.model_dump(), run_id=str(uuid4()), mode=mode, created_at=datetime.now(timezone.utc).isoformat(), status="discovering", approved=False, approval={}, candidates=[], competitors=[], profiles=[], sources=[], active_sources=[], current_profile={}, index=0, round=0, hypotheses=[], warnings=[], trace=[])
+    return dict(request=request.model_dump(), run_id=str(uuid4()), mode=mode, created_at=datetime.now(timezone.utc).isoformat(), status="discovering", approved=False, approval={}, candidates=[], competitors=[], profiles=[], sources=[], active_sources=[], current_profile={}, index=0, round=0, hypotheses=[], strategist_takeaway=None, warnings=[], trace=[], usage=[], benchmarks={}, review_findings=[], revision_instructions='', revision_count=0, draft_hypotheses=[], draft_takeaway=None)
 
 
 def build_graph(search, analyst):
@@ -115,31 +125,114 @@ def build_graph(search, analyst):
     def analyze(state):
         trace, warnings = list(state["trace"]), list(state["warnings"])
         supported_ids = {f["source_id"] for p in state["profiles"] for f in p["facts"].values() if f["status"] == "Source-supported"}
-        hypotheses = []
+        hypotheses, takeaway = [], None
         if supported_ids:
             try:
                 proposed = bounded_call(lambda:analyst.analyze(state["request"], state["profiles"]), "analysis:agent", trace)
-                hypotheses = [h.model_dump() for h in proposed if h.source_ids and set(h.source_ids).issubset(supported_ids)][:3]
+                candidates = proposed.hypotheses if isinstance(proposed, Analysis) else proposed
+                hypotheses = [h.model_dump() for h in candidates if h.source_ids and set(h.source_ids).issubset(supported_ids)][:3]
+                if isinstance(proposed, Analysis) and proposed.takeaway:
+                    if set(proposed.takeaway.source_ids).issubset(supported_ids):
+                        takeaway = proposed.takeaway.model_dump()
+                    else:
+                        warnings.append("Strategist takeaway withheld because its evidence references were unsupported.")
             except ProviderError:
                 warnings.append("Analysis unavailable. Source-backed comparison is available for manual review; no substitute model output was invented.")
         if len(hypotheses) != 3:
             warnings.append("Fewer than three evidence-linked hypotheses are available. This is a partial result; retry or complete manual analysis before submission.")
-        return {"hypotheses":hypotheses, "trace":trace, "warnings":warnings, "status":"awaiting review"}
+        return {"hypotheses":hypotheses, "strategist_takeaway":takeaway, "trace":trace, "warnings":warnings, "status":"awaiting review"}
 
     def review(state):
         answer = interrupt({"stage":"review", "run_id":state["run_id"], "message":"Review evidence, missing terms and hypotheses. Approve to enable export, or reject to end this run."})
         approved = answer.get("approve") is True
         return {"approved":approved, "approval":{"approved":approved, "run_id":state["run_id"], "note":str(answer.get("note", ""))[:1000], "at":datetime.now(timezone.utc).isoformat()}, "status":"approved" if approved else "rejected"}
 
+    def benchmarks(state):
+        trace, warnings = list(state['trace']), list(state['warnings'])
+        result = {'benchmarks':[], 'limitations':'Benchmark research unavailable. Enter a clearly labeled strategist CPA assumption.'}
+        sources = []
+        try:
+            sources = bounded_call(lambda:search.search('bank credit union consumer checking account acquisition cost per funded account direct mail display paid social campaign benchmark case study'), 'benchmarks:search', trace)
+            proposed = bounded_call(lambda:analyst.benchmarks(state['request'], sources), 'benchmarks:agent', trace)
+            accepted = []
+            for benchmark in proposed.benchmarks:
+                source = next((s for s in sources if s.id == benchmark.source_id), None)
+                if not source or normalized(benchmark.quote) not in normalized(source.excerpt):
+                    warnings.append('A benchmark was withheld because its source quote could not be validated.')
+                    continue
+                amounts = {Decimal(n.replace(',', '')) for n in re.findall(r'\d[\d,]*(?:\.\d+)?', benchmark.quote)}
+                if benchmark.cpa is not None and Decimal(str(benchmark.cpa)) not in amounts:
+                    warnings.append('A benchmark CPA was withheld because its amount was absent from the quote.')
+                    continue
+                if benchmark.cpa is not None:
+                    quote = normalized(benchmark.quote)
+                    definition = normalized(benchmark.account_definition)
+                    # Conservative unit gate: a matching number alone is not an account CPA.
+                    account_unit = re.search(r'(?:cost|spend|cpa).{0,60}(?:per|/|each).{0,35}(?:checking|account)|(?:per|/|each).{0,35}(?:checking\s+)?account', quote)
+                    wrong_unit = re.search(r'cost per (?:lead|click)|\bcpl\b|\bcpc\b', quote)
+                    unsupported_definition = any(term in definition and term not in quote for term in ('funded','activated','opened','direct deposit'))
+                    if 'checking' not in quote or not account_unit or wrong_unit or unsupported_definition:
+                        warnings.append('A benchmark was withheld because its quote did not establish the checking-account CPA unit and stated conversion definition.')
+                        continue
+                accepted.append(benchmark.model_dump())
+            result = {'benchmarks':accepted, 'limitations':proposed.limitations}
+        except ProviderError:
+            warnings.append('Benchmark research unavailable; no substitute CPA was invented.')
+        all_sources = {s['id']:s for s in state['sources']}
+        all_sources.update({s.id:s.model_dump() for s in sources})
+        return {'benchmarks':result, 'sources':list(all_sources.values()), 'trace':trace, 'warnings':warnings}
+
+    def strategy_context(state):
+        return {k:state.get(k) for k in ('request','profiles','hypotheses','strategist_takeaway','benchmarks','review_findings','revision_instructions')}
+
+    def critique(state):
+        trace, warnings = list(state['trace']), list(state['warnings'])
+        findings, instructions = [], ''
+        if state['hypotheses']:
+            try:
+                result = bounded_call(lambda:analyst.critique(strategy_context(state)), 'strategy:review', trace)
+                findings, instructions = result.findings, result.revision_instructions
+            except ProviderError:
+                warnings.append('Automated review unavailable. Original draft retained for human review.')
+        return {'draft_hypotheses':state['hypotheses'], 'draft_takeaway':state.get('strategist_takeaway'), 'review_findings':findings, 'revision_instructions':instructions, 'trace':trace, 'warnings':warnings}
+
+    def revise(state):
+        trace, warnings = list(state['trace']), list(state['warnings'])
+        result = {}
+        if state.get('revision_instructions'):
+            try:
+                revised = bounded_call(lambda:analyst.revise(strategy_context(state)), 'strategy:revision', trace)
+                supported = {f['source_id'] for p in state['profiles'] for f in p['facts'].values() if f['status']=='Source-supported'}
+                cited = [h.source_ids for h in revised.hypotheses]
+                if revised.takeaway:
+                    cited.append(revised.takeaway.source_ids)
+                if not all(ids and set(ids).issubset(supported) for ids in cited):
+                    raise ValueError('Unsupported revision references')
+                result = {'hypotheses':[h.model_dump() for h in revised.hypotheses], 'strategist_takeaway':revised.takeaway.model_dump() if revised.takeaway else None, 'revision_count':1}
+            except (ProviderError, ValueError):
+                warnings.append('Revision unavailable or unsupported. Original draft retained; review findings remain unresolved for the strategist.')
+        return {**result, 'trace':trace, 'warnings':warnings, 'status':'awaiting review'}
+
+    def tracked(fn):
+        def call(state):
+            result = fn(state)
+            result['usage'] = [dict(e) for provider in (search, analyst) for e in getattr(provider, 'events', [])]
+            result['usage'].sort(key=lambda e:e.get('started_at',''))
+            return result
+        return call
+
     builder = StateGraph(RunState)
-    for name, fn in [("discover",discover), ("confirm",confirm), ("collect",collect), ("extract",extract), ("save_profile",save_profile), ("analyze",analyze), ("review",review)]:
-        builder.add_node(name, fn)
+    for name, fn in [("discover",discover), ("confirm",confirm), ("collect",collect), ("extract",extract), ("save_profile",save_profile), ("analyze",analyze), ('benchmarks',benchmarks), ('critique',critique), ('revise',revise), ("review",review)]:
+        builder.add_node(name, tracked(fn))
     builder.add_edge(START,"discover")
     builder.add_edge("discover","confirm")
     builder.add_edge("confirm","collect")
     builder.add_edge("collect","extract")
     builder.add_conditional_edges("extract",lambda s:"collect" if s["round"] < 2 and s["current_profile"].get("follow_up") else "save_profile",["collect","save_profile"])
     builder.add_conditional_edges("save_profile",lambda s:"collect" if s["index"] < 4 else "analyze",["collect","analyze"])
-    builder.add_edge("analyze","review")
+    builder.add_edge('analyze','benchmarks')
+    builder.add_edge('benchmarks','critique')
+    builder.add_edge('critique','revise')
+    builder.add_edge('revise','review')
     builder.add_edge("review",END)
     return builder.compile(checkpointer=InMemorySaver())

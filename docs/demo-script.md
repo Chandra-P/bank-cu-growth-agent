@@ -35,3 +35,7 @@ Show downloads are absent before approval. Add a caveat, acknowledge review, app
 “I used Codex to help scope, code, test and document this build. The biggest lesson was that evidence, state and failure behavior matter as much as prompts. Quote checks are not semantic verification, and full disclosures still need review. The GitHub repository contains the app, tests and reproducible recorded sample.”
 
 Replace any unperformed claim with what actually happened. Mention live provider validation only after an observed successful live run. Add your own learning from using the app.
+
+## Updated four-agent demonstration
+
+Enter a business-level client goal, run the recorded demo and confirm competitors. Explain that its outputs are curated, not personalized. Show the strategist takeaway and a campaign card with direct mail/display/paid social roles. Open Benchmarks: recorded CPA is unknown, not an invented public benchmark. Open Review & revision: show the three findings and original-versus-final guardrail. Open Agent activity & costs: recorded mode has zero external calls and no simulated token totals. In live mode the same panel shows real provider attempts, separate input/output tokens and estimated model costs, with unknowns explicit. Finish at the unapproved human checkpoint. No campaign is published.

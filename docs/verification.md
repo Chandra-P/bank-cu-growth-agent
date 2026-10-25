@@ -61,3 +61,14 @@ A code review found no blocking credential-isolation issues. A mode-aware landin
 ## Public release verification — October 24, 2026
 
 URL: https://bank-cu-growth-intelligence.streamlit.app/ . GitHub source branch `submission` published from release commit `c71ec30`. Streamlit build logs confirm Python 3.12.15 and Streamlit 1.65.0. Sharing settings explicitly show **public and searchable**. Empty hosted API-key inputs disable live research; the hosted recorded demo reaches its confirmation and final review checkpoints. No API keys were entered as host secrets or into the hosted smoke test. Release test rerun: **26 tests passed in 38.602 seconds**. Submission ZIP integrity and exclusion of credential files and saved key values were checked before publication.
+
+
+## Four-agent workflow release — October 24, 2026
+
+Discovery, Research, Strategy and Benchmarks are logical roles within the LangGraph workflow. Strategy performs critique and at most one accepted revision. Original campaigns, review findings and final recommendations are retained. Human confirmation and export approval remain mandatory. In-app activity distinguishes local/replay operations from provider attempts and shows per-role usage, separate input/output cost estimates and explicit unknowns. No additional monitoring service or host credentials were added.
+
+Final full suite: 41 tests passed in 12.706 seconds. New coverage includes usage retained before failed JSON parsing/retries, cache-sensitive pricing, missing usage/model pricing, partial cost subtotals, positive checking CPA acceptance, rejection of CPL relabeling and unsupported benchmark amounts, unsupported revision fallback, failed-review fallback, and UI display/approval isolation. Native browser QA reached review with one accepted revision, three campaign cards and locked exports.
+
+Independent code review found two important defects. Both were reproduced by failing tests and fixed: missing cache/reasoning details now stay unknown, and checking CPA acceptance rejects lead/click units and unsupported funded/activated/opened account definitions. Lexical checks are conservative, not proof of semantic correctness; human source/comparability review remains required. No new paid live run was made for this release; HTTP/model boundaries and real graph/UI behavior were tested with fixtures/mocks.
+
+Ruling: use the existing submission checkout and public app as authorized. Known model pricing only, dated official standard text snapshot; other models/unsupported tiers remain unpriced. The campaign-budget calculator and internal rate cards remain subsequent increments; this release delivers benchmark evidence and AI operating-cost tracking. No minor review findings were deferred.

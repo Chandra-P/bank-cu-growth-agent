@@ -1,6 +1,6 @@
 # Bank & Credit Union Growth Intelligence Agent
 
-A focused Project A submission: compare a bank or credit union's checking product with three confirmed competitors and review three growth experiments supported by public-source evidence.
+A focused Project A submission: compare a bank or credit union's checking product with three confirmed competitors and review three client-needs-led campaign concepts, public CPA research, one strategy review/revision and session-local API usage/cost tracking.
 
 **Demo institution:** Truliant Federal Credit Union. **Market:** Charlotte, North Carolina. **Product:** consumer checking accounts.
 
@@ -46,22 +46,25 @@ flowchart LR
     D --> E{Useful gap and search budget?}
     E -->|One follow-up maximum| C
     E -->|Next institution| C
-    E -->|Four profiles complete| F[Analysis agent: growth hypotheses]
-    F --> G{Human reviews brief}
+    E -->|Four profiles complete| F[Strategy agent: client-led campaign draft]
+    F --> J[Benchmarks agent: public CPA research]
+    J --> K[Strategy review and one revision]
+    K --> G{Human reviews brief}
     G -->|Approve| H[Markdown + evidence JSON downloads]
     G -->|Reject| I[End without export]
 ```
 
 - **Discovery agent:** proposes three plausible local alternatives and their official domains. Candidates are not an independently verified “top three” ranking.
 - **Research agent:** extracts one mainstream checking product per institution; chooses a targeted follow-up query when evidence is incomplete. Opening deposit, ongoing balance and fee-waiver balance are separate fields.
-- **Analysis agent:** proposes three hypotheses, experiments and metrics using source IDs attached to supported facts. Hypotheses are inference, not established growth outcomes.
+- **Strategy agent:** proposes three campaign concepts with audience, client-need connection, message, allowed channels, experiment, outcome and guardrail. After benchmark research it critiques the draft and revises once. The original and review findings remain inspectable.
+- **Benchmarks agent:** researches public checking account acquisition CPA evidence, retaining exact source quotes, account definitions, period, cost coverage and comparability. Missing CPA remains unknown; public results are not forecasts or rate cards.
 - **Orchestrator:** LangGraph `StateGraph` with conditional routing, `InMemorySaver`, native `interrupt()` gates and `Command(resume=...)`.
 
 ## State, limits and recovery
 
 State holds the request, confirmed competitors, sources, grounded profiles, gaps, active institution/round, hypotheses, warnings, trace and approval. It survives Streamlit reruns in the active browser session. It is intentionally in memory: browser-session loss or process restart loses the run. Export approved files to retain them. There is no persistent customer memory or external database.
 
-Each institution gets up to two searches, five results per search, and one retry per remote operation. A full run makes at most nine logical searches (one discovery plus eight research) and ten logical model operations (one discovery, eight extractions, one analysis), each with at most two attempts. Search timeout is 20 seconds; model timeout is 35 seconds. Exhausted search/extraction failures produce explicit unknowns. Exhausted analysis failures produce a partial comparison and a warning, never an offline result silently substituted into live mode. Latency and costs vary; live performance is not guaranteed.
+Each institution gets up to two searches, five results per search, and one retry per remote operation. A full run makes at most ten logical searches (one discovery, eight research and one benchmark) and thirteen logical model operations (one discovery, eight extractions, one strategy draft, one benchmark extraction, one critique and one revision), each with at most two attempts. Search timeout is 20 seconds; model timeout is 35 seconds. Exhausted search/extraction failures produce explicit unknowns. Exhausted analysis failures produce a partial comparison and a warning, never an offline result silently substituted into live mode. Latency and costs vary; live performance is not guaranteed.
 
 Grounding checks enforce: known source ID, matching confirmed official domain, exact normalized quote match, and numeric values present in the quote. Explicitly uncertain or ambiguous claims remain unverified. Product identity must be source-supported before an institution can supply comparison terms. Tavily requests cleaned full-page text, retaining up to 14,000 characters per source with a search-excerpt fallback. This is still a lexical check; it does not prove semantic entailment, freshness or full disclosure coverage. Collected text can omit conditions, offers and dates. Human reviewers should check the full official pages. The app does not certify compliance or execute campaigns.
 
@@ -87,3 +90,13 @@ The CLI generates a labeled, scripted demo export under `samples/`. It is not a 
 Recorded evidence is a small curated set of official product-page excerpts collected October 24, 2026. See `data/demo.json` for URLs and collection notes. Competitor selection in this replay is illustrative and user-confirmed, not a market-share analysis. Full disclosures and all eligibility/offer terms were not captured. The live system uses Tavily; the recorded fixture was collected during development with web research and is not a stored Tavily response.
 
 Built for this project from its requirements. The handout's supplied solution documents were not consulted. AI coding tools assisted with design, implementation, testing and documentation; see the prompt/iteration log in the project document. Review the final submission and add your own observations before presenting it as your work.
+
+## Review, revision and usage visibility
+
+The UI has Comparison & opportunities, Evidence & gaps, Benchmarks, Review & revision, Agent activity & costs, and How it works tabs. The Strategy agent performs review/revision; there is no fifth agent. Invalid revision references or exhausted review/revision failures retain the original draft and display warnings. One revision cycle can make up to two HTTP attempts; no unbounded reflection loop runs. An accepted revision does not certify that every review concern was resolved.
+
+Provider calls are orchestrated Python calls. Models return structured decisions; this is not an autonomous function-calling tool loop. The activity panel distinguishes workflow operations from actual provider attempts. Demo activity is local replay with zero external calls and no fabricated usage.
+
+OpenAI response usage is captured before JSON parsing, including responses requiring retries. Records include role, action, attempt, model, timing, input/output/total tokens, cache reads and reasoning tokens when available, plus separate input/output cost estimates. Cached tokens are a subset of input and reasoning tokens a subset of output. Missing provider usage and unmatched pricing remain unknown, with partial totals explicitly identified. Model pricing is a dated standard-text snapshot linked to the official source; unsupported billing tiers are unpriced. Tavily basic-search credits are separate; failed/uncertain charges remain unknown and actual dollar charges depend on the visitor plan. Provider bills remain authoritative.
+
+No prompts, raw provider error bodies or keys are included in activity events. Structured outputs and client context are retained in the session and approved exports as described above. No LangSmith tracing is enabled and no extra monitoring credential is required.

@@ -22,3 +22,14 @@
 # Public Modern Fintech revision — October 24, 2026
 
 User selected Figma Option 3. Applied blue-gray/cobalt/navy theme, Inter and responsive cards while preserving evidence and human checkpoints. Removed web environment credential loading; added session password inputs and a clear action that discards graph/provider references and results. Added isolation/readiness/reset regressions, verified red then green. Full suite passed 26 tests; final browser check corrected narrow-screen metric clipping. Code review reported no blocking findings. Prepared Docker and Streamlit Cloud instructions. Hosting sign-in and expired GitHub auth block actual publication; no public URL claimed.
+
+
+## Four-agent workflow release — October 24, 2026
+
+Discovery, Research, Strategy and Benchmarks are logical roles within the LangGraph workflow. Strategy performs critique and at most one accepted revision. Original campaigns, review findings and final recommendations are retained. Human confirmation and export approval remain mandatory. In-app activity distinguishes local/replay operations from provider attempts and shows per-role usage, separate input/output cost estimates and explicit unknowns. No additional monitoring service or host credentials were added.
+
+Final full suite: 41 tests passed in 12.706 seconds. New coverage includes usage retained before failed JSON parsing/retries, cache-sensitive pricing, missing usage/model pricing, partial cost subtotals, positive checking CPA acceptance, rejection of CPL relabeling and unsupported benchmark amounts, unsupported revision fallback, failed-review fallback, and UI display/approval isolation. Native browser QA reached review with one accepted revision, three campaign cards and locked exports.
+
+Independent code review found two important defects. Both were reproduced by failing tests and fixed: missing cache/reasoning details now stay unknown, and checking CPA acceptance rejects lead/click units and unsupported funded/activated/opened account definitions. Lexical checks are conservative, not proof of semantic correctness; human source/comparability review remains required. No new paid live run was made for this release; HTTP/model boundaries and real graph/UI behavior were tested with fixtures/mocks.
+
+Ruling: use the existing submission checkout and public app as authorized. Known model pricing only, dated official standard text snapshot; other models/unsupported tiers remain unpriced. The campaign-budget calculator and internal rate cards remain subsequent increments; this release delivers benchmark evidence and AI operating-cost tracking. No minor review findings were deferred.

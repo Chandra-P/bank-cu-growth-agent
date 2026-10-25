@@ -12,6 +12,7 @@ from growth.graph import build_graph, new_state
 from growth.models import Institution, ResearchRequest, FACT_FIELDS
 from growth.providers import TavilySearch, LiveAnalyst
 from growth.report import export_bundle, markdown_text
+from growth.panels import activity_panel, review_panel, benchmark_panel
 
 ROOT = Path(__file__).resolve().parent
 st.set_page_config(page_title="FI growth intelligence", page_icon=":material/account_balance:", layout="wide", initial_sidebar_state="auto")
@@ -42,6 +43,7 @@ def advance(payload):
     try:
         with st.status("Working through the research workflow…", expanded=True) as status:
             labels = {"discover":"Discovering competitor candidates", "confirm":"Competitor set confirmed", "collect":"Collecting public-source evidence", "extract":"Checking extracted facts and research gaps", "save_profile":"Institution profile assembled", "analyze":"Drafting growth hypotheses", "review":"Review decision recorded"}
+            labels.update(benchmarks='Researching public acquisition benchmarks', critique='Strategy agent reviewing the draft', revise='Revising recommendations once')
             for event in st.session_state.graph.stream(payload, st.session_state.config, stream_mode="updates"):
                 for node in event:
                     if node in labels:
@@ -83,12 +85,14 @@ with st.sidebar:
         domain = st.text_input("Official domain", default.home.domain, disabled=recorded or active)
         market = st.text_input("Market", default.market, disabled=recorded or active, max_chars=160)
         st.caption("Consumer checking · 3 competitors")
+        client_brief = st.text_area('Client goals or problem to solve', key='client_brief', max_chars=2000, disabled=active, placeholder='Annual goals, acquisition challenges and priorities from the client discussion. Business context only.')
         with st.expander("Demo controls",icon=":material/tune:"):
             outage = st.checkbox("Simulate a Skyla source outage", disabled=not recorded or active, key="demo_outage", help="Demonstrates one retry, then an explicit unknown instead of an invented answer.")
         start = st.form_submit_button("Explore recorded demo" if recorded else "Start live research", type="primary", disabled=active or (not recorded and not ready), key="start_research", icon=":material/search:",width="stretch")
     if start:
         try:
             request = default if recorded else ResearchRequest(home=Institution(name=name,domain=domain),market=market)
+            request = request.model_copy(update={'client_brief':client_brief.strip()})
             if recorded:
                 search, analyst = DemoSearch(outage=outage), DemoAnalyst()
             else:
@@ -113,6 +117,7 @@ with st.sidebar:
 st.caption("FI / GROWTH     ·     WORKSPACE / COMPETITOR ANALYSIS")
 st.title("Your market, in focus.")
 st.markdown("Consumer checking intelligence for banks and credit unions.")
+st.caption('Four-agent workflow · Review & revision · Usage transparency')
 
 result = st.session_state.result
 if st.session_state.run_error:
@@ -126,7 +131,7 @@ if not result:
         st.write("One market. Three competitors. A checking-account brief your growth team can inspect and act on.")
         st.caption("Recorded evidence demo · No API keys needed · Human approval before export" if recorded else "Live public-source research · Bring your own API keys · Human approval before export")
     st.space("small")
-    steps = st.columns(3,gap="medium")
+    steps = st.columns(4,gap="medium")
     with steps[0].container(border=True):
         st.badge("01 / DISCOVER",icon=":material/travel_explore:",color="blue")
         st.subheader("Map your alternatives")
@@ -136,9 +141,13 @@ if not result:
         st.subheader("See the terms clearly")
         st.write("Compare checking products with source evidence and explicit gaps.")
     with steps[2].container(border=True):
-        st.badge("03 / DECIDE",icon=":material/experiment:",color="blue")
+        st.badge("03 / STRATEGY",icon=":material/experiment:",color="blue")
         st.subheader("Choose what to test")
         st.write("Review growth hypotheses, experiments and metrics before sharing your brief.")
+    with steps[3].container(border=True):
+        st.badge('04 / BENCHMARKS',icon=':material/query_stats:',color='blue')
+        st.subheader('Ground the economics')
+        st.write('Research public CPA evidence, then inspect the strategy review and revision before approving.')
     st.caption(":material/arrow_back: Explore the recorded demo or enter your own keys for live research in the research panel.")
     st.stop()
 
@@ -180,6 +189,8 @@ if status == "awaiting competitors":
             st.rerun()
         except (ValueError,ValidationError):
             st.error("Enter exactly three distinct competitor names and official public domains, excluding your home institution.")
+    with st.expander('Discovery activity & costs'):
+        activity_panel(result)
     st.stop()
 
 profiles = result.get("profiles",[])
@@ -192,15 +203,29 @@ cols[1].metric("Evidence",f"{supported} / {len(facts)}",border=True,help="Source
 cols[2].metric("Hypotheses",str(len(result["hypotheses"])),border=True)
 cols[3].metric("Review status",status.removeprefix("awaiting ").capitalize(),border=True)
 
-brief, evidence, trace, method = st.tabs(["Comparison & opportunities","Evidence & gaps","Run trace","How it works"])
+brief, evidence, benchmarks, revisions, trace, method = st.tabs(["Comparison & opportunities","Evidence & gaps","Benchmarks","Review & revision","Agent activity & costs","How it works"])
 with brief:
+    with st.container(border=True):
+        st.subheader('Strategist takeaway')
+        st.caption('CLIENT CONTEXT · provided by the strategist')
+        st.write(markdown_text(result['request'].get('client_brief') or 'Not provided; confirm the client goal and problem.'))
+        takeaway = result.get('strategist_takeaway')
+        if takeaway:
+            st.markdown('**Research finding:** '+markdown_text(takeaway['finding']))
+            st.markdown('**Strategic implication:** '+markdown_text(takeaway['implication']))
+            st.markdown('**Client validation question:** '+markdown_text(takeaway['client_question']))
+            st.caption('Evidence: '+', '.join(takeaway['source_ids']))
+        else:
+            st.info('A supported takeaway is unavailable; review the comparison and gaps.')
+        if result['mode']=='recorded':
+            st.caption('Curated examples are not personalized to the entered client context. Live mode uses the client brief.')
     with st.container(border=True,key="comparison_card"):
         st.badge("MARKET SNAPSHOT",icon=":material/compare_arrows:",color="blue")
         st.subheader("How the checking offers compare")
         rows = [{"Field":label, **{p["institution"]["name"]:p["facts"][key]["value"] for p in profiles}} for key,label in FACT_FIELDS.items()]
         st.dataframe(rows,hide_index=True,height=365,alt="Checking product comparison for the home institution and three confirmed competitors")
         st.caption("Not verified = insufficient evidence. It does not mean zero fees, no requirement, or no available offer.")
-    st.subheader("Three opportunities to test")
+    st.subheader("Campaign concepts for the client discussion")
     st.caption("Inference for human review · no promised uplift or unverified claims of product superiority")
     opportunity_columns = st.columns(3, gap="medium")
     for i,h in enumerate(result["hypotheses"],1):
@@ -208,11 +233,18 @@ with brief:
             st.badge(f"OPPORTUNITY {i:02d}",icon=":material/experiment:",color="blue")
             st.markdown(f"#### {i}. {markdown_text(h['title'])}")
             st.write(markdown_text(h["rationale"]))
+            st.markdown('**Audience:** '+markdown_text(h.get('audience','To confirm')))
+            st.markdown('**Client need:** '+markdown_text(h.get('need_connection','To confirm')))
+            st.markdown('**Message:** '+markdown_text(h.get('message','To develop')))
+            st.caption('CHANNELS · '+', '.join(h.get('channels',[])))
+            st.write(markdown_text(h.get('channel_rationale','To confirm')))
             with st.expander("Experiment & success metric"):
                 st.caption("THE EXPERIMENT")
                 st.write(markdown_text(h["experiment"]))
                 st.caption("WHAT TO MEASURE")
                 st.write(markdown_text(h["success_metric"]))
+                st.markdown('**Guardrail:** '+markdown_text(h.get('guardrail','To confirm')))
+                st.markdown('**Ask the client:** '+markdown_text(h.get('client_question','Confirm the goal.')))
             with st.expander("Evidence & limitations",icon=":material/policy:"):
                 st.caption("Limit: " + markdown_text(h["caveat"]))
                 st.caption("Evidence: " + ", ".join(h["source_ids"]))
@@ -238,15 +270,19 @@ with evidence:
             st.caption("Gaps: " + ", ".join(profile["gaps"]))
 
 with trace:
-    st.subheader("Decisions and tool outcomes")
-    st.caption("Operational events only. No private model reasoning or API credentials are stored here.")
-    st.dataframe(result["trace"],hide_index=True,alt="Agent operation trace showing retries, evidence checks, and research routing")
-    st.caption("Run ID: " + result["run_id"])
+    activity_panel(result)
+
+with benchmarks:
+    benchmark_panel(result)
+
+with revisions:
+    review_panel(result)
 
 with method:
     st.subheader("A small, stateful agent system")
-    st.code("Discover → HUMAN CONFIRMS → Search → Extract → Gap decision\n                                      ↑              │\n                                      └─ one follow-up┘\n              → Next institution → Analyze → HUMAN REVIEWS → Export",language=None)
-    st.write("Discovery chooses candidates. Research chooses a follow-up search when evidence is incomplete. Analysis proposes evidence-linked growth tests. LangGraph holds state and pauses for your two decisions.")
+    st.code("Discovery → HUMAN CONFIRMS → Research → Strategy draft\n    → Benchmarks → Strategy review → One revision → HUMAN APPROVES → Export",language=None)
+    st.write('Discovery proposes competitors. Research collects official checking evidence and selects one useful follow-up per institution. Strategy connects findings to client needs. Benchmarks researches public acquisition economics. Strategy reviews and revises once. These are four logical roles sharing a model client, not four servers. LangGraph manages state and human checkpoints.')
+    st.write('Tool use is orchestrated Python API calls, not autonomous model function-calling. Models propose structured research decisions; the graph validates and executes them. Cost tracking is session-local; no external tracing account is required.')
     st.write("Limits: three competitors, two search rounds per institution, five results per search, one retry per remote operation. Memory is scoped to this session. Public product evidence only; no campaign publishing.")
 
 st.divider()

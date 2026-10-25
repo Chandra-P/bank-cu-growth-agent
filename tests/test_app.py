@@ -9,6 +9,36 @@ class AppTests(unittest.TestCase):
     def open(self):
         return AppTest.from_file(str(Path(__file__).resolve().parents[1] / "app.py"), default_timeout=30).run()
 
+    def test_client_context_and_campaign_brief_are_visible_before_approval(self):
+        app = self.open()
+        app.text_area(key="client_brief").set_value("Client goal: funded checking accounts; confirm abandonment cause.")
+        app.button(key="start_research").click().run()
+        app.button(key="confirm_competitors").click().run()
+        self.assertFalse(app.exception)
+        self.assertIn("funded checking", app.session_state["result"]["request"]["client_brief"])
+        headings = [h.value for h in app.subheader]
+        self.assertIn("Strategist takeaway", headings)
+        self.assertIn("Campaign concepts for the client discussion", headings)
+        self.assertIn('Agent activity & AI costs', headings)
+        self.assertIn('Review & revision', headings)
+        self.assertIn('Public acquisition benchmarks', headings)
+        self.assertEqual(app.session_state['result']['revision_count'],1)
+        self.assertFalse(app.get("download_button"))
+        self.assertTrue(app.button(key="approve_report").disabled)
+
+    def test_live_usage_panel_discloses_unknown_costs(self):
+        app=self.open()
+        app.button(key='start_research').click().run()
+        app.button(key='confirm_competitors').click().run()
+        result=dict(app.session_state['result'])
+        result['mode']='live'
+        result['usage']=[{'agent':'Strategy','provider':'OpenAI','action':'strategy:review','outcome':'failed','input_tokens':100,'output_tokens':20,'total_tokens':120,'input_cost_usd':None,'output_cost_usd':None,'total_cost_usd':None}]
+        app.session_state['result']=result
+        app.run()
+        self.assertFalse(app.exception)
+        self.assertTrue(any('1 have unknown cost' in w.value for w in app.warning))
+        self.assertTrue(app.button(key='approve_report').disabled)
+
     def test_live_never_uses_server_keys_and_requires_visitor_keys(self):
         with patch.dict("os.environ", {"OPENAI_API_KEY":"server-openai-sentinel", "TAVILY_API_KEY":"server-tavily-sentinel"}):
             app = self.open()
