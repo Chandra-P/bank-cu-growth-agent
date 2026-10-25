@@ -108,6 +108,12 @@ def build_graph(search, analyst):
                 follow_up = extraction.follow_up
             except ProviderError:
                 warnings.append(f"{institution.name}: extraction unavailable; review source pages manually.")
+                if state['round'] and state.get('current_profile'):
+                    previous = Profile(**state['current_profile'])
+                    if previous.institution.domain == institution.domain:
+                        warnings.append(f"{institution.name}: previous grounded findings retained after the follow-up extraction outage; gaps remain unresolved.")
+                        trace.append({'action':f'evidence:{institution.domain}', 'outcome':'previous grounded profile retained', 'next':'next institution'})
+                        return {'current_profile':previous.model_dump(), 'round':state['round']+1, 'trace':trace, 'warnings':warnings}
         grounded = {key:ground_fact(facts.get(key, Fact()), sources, institution) for key in FACT_FIELDS}
         if grounded["product_name"].status != "Source-supported":
             grounded = {key:Fact() for key in FACT_FIELDS}

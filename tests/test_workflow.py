@@ -57,6 +57,27 @@ class WorkflowTests(unittest.TestCase):
         with self.assertRaises(PermissionError):
             export_bundle(result)
 
+    def test_follow_up_extraction_outage_preserves_supported_first_round(self):
+        class FollowUpOutage(DemoAnalyst):
+            def __init__(self):
+                super().__init__()
+                self.calls = {}
+            def extract(self, institution, sources):
+                self.calls[institution.domain] = self.calls.get(institution.domain, 0) + 1
+                if institution.domain == 'truliantfcu.org' and self.calls[institution.domain] > 1:
+                    raise RuntimeError('Simulated follow-up outage')
+                return super().extract(institution, sources)
+        analyst = FollowUpOutage()
+        graph = build_graph(DemoSearch(), analyst)
+        config = {'configurable': {'thread_id': self.id()}, 'recursion_limit': 60}
+        result = graph.invoke(new_state(demo_request(), 'recorded'), config)
+        result = self.research(graph, config, result)
+        home = result['profiles'][0]
+        self.assertEqual(home['facts']['product_name']['status'], 'Source-supported')
+        self.assertGreater(sum(f['status'] == 'Source-supported' for f in home['facts'].values()), 0)
+        self.assertTrue(any('retained' in w for w in result['warnings']))
+        self.assertFalse(result['approved'])
+
     def test_recorded_mode_rejects_a_different_market(self):
         request = demo_request().model_copy(update={"market": "Seattle, WA"})
         graph = build_graph(DemoSearch(), DemoAnalyst())
