@@ -94,23 +94,26 @@ def advance(payload):
         st.session_state.run_error = "The run could not finish this step. Check your local configuration and provider access, then start a new run. Provider details and credentials are not displayed."
 
 
-st.caption("FI / GROWTH     ·     WORKSPACE / COMPETITOR ANALYSIS")
-st.title("Your market, in focus.")
-st.markdown("Consumer checking intelligence for banks and credit unions.")
-st.caption('Four-agent workflow · Review & revision · Usage transparency')
+st.caption("FI GROWTH  /  RESEARCH WORKSPACE")
+st.title("Growth overview")
+st.caption('Checking acquisition · Competitor intelligence · Campaign planning')
 
 active = st.session_state.result is not None
 default = demo_request()
-with st.container(border=True):
-    st.subheader('Choose your client')
+setup_card = st.container(border=True, key='client_setup')
+with setup_card:
+    st.subheader('Research setup')
     top = st.columns([3,1])
     mode = top[0].selectbox('Research mode', ['Recorded evidence demo','Live research'], key='mode', on_change=change_mode)
     top[1].button('New research', key='new_research', on_click=reset_client, disabled=not active, width='stretch')
 recorded = mode == 'Recorded evidence demo'
 
 with st.sidebar:
-    st.badge('FI / GROWTH',icon=':material/account_balance:',color='blue')
-    st.markdown('## Research connections')
+    st.markdown('### :material/account_balance: FI Growth')
+    st.caption('STRATEGIST WORKSPACE')
+    st.markdown('**:violet[:material/dashboard: Growth intelligence]**')
+    st.divider()
+    st.markdown('#### Connections')
     st.caption('Choose the client and market at the top of the workspace.')
     use_local = False
     if LOCAL_SETTINGS:
@@ -136,7 +139,7 @@ if recorded:
     st.session_state.setdefault('client_name',default.home.name)
     st.session_state.setdefault('client_market',default.market)
     st.session_state['home_domain'] = default.home.domain
-with st.container(border=True,key='client_setup'):
+with setup_card:
     columns = st.columns(2)
     name = columns[0].text_input('Bank or credit union name',key='client_name',max_chars=120,disabled=recorded,on_change=clear_website,placeholder='Enter your client FI name')
     market = columns[1].text_input('Market',key='client_market',max_chars=160,disabled=recorded,on_change=clear_website,placeholder='City, state or service area')
@@ -290,8 +293,7 @@ if status == "awaiting competitors":
 profiles = result.get("profiles",[])
 facts = [f for p in profiles for f in p["facts"].values()]
 supported = sum(f["status"] == "Source-supported" for f in facts)
-with st.container(horizontal=True, gap="small", wrap=True):
-    cols = [st.container(width=210) for _ in range(4)]
+cols = st.columns(4, gap='small')
 cols[0].metric("Institutions",str(len(profiles)),border=True)
 cols[1].metric("Evidence",f"{supported} / {len(facts)}",border=True,help="Source-supported fields out of all compared fields.")
 cols[2].metric("Hypotheses",str(len(result["hypotheses"])),border=True)

@@ -1,45 +1,45 @@
 [theme]
 base = "light"
-primaryColor = "#315DEB"
-backgroundColor = "#E8EFFB"
-secondaryBackgroundColor = "#F7FAFF"
-textColor = "#142D55"
+primaryColor = "#635BFF"
+backgroundColor = "#F6F8FA"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#30313D"
 font = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-baseFontSize = 15
-headingFontSizes = ["2.25rem", "1.65rem", "1.2rem", "1.05rem", "1rem", "0.9rem"]
+baseFontSize = 14
+headingFontSizes = ["1.85rem", "1.45rem", "1.12rem", "1rem", "0.95rem", "0.9rem"]
 headingFontWeights = [650, 650, 600, 600, 600, 600]
-borderColor = "#CDD9EF"
-dataframeBorderColor = "#C6D5E2"
-dataframeHeaderBackgroundColor = "#172D64"
-dataframeHeaderTextColor = "#F3F8FC"
-baseRadius = "12px"
-buttonRadius = "8px"
+borderColor = "#E3E8EE"
+dataframeBorderColor = "#E3E8EE"
+dataframeHeaderBackgroundColor = "#F0F3F7"
+dataframeHeaderTextColor = "#414552"
+baseRadius = "6px"
+buttonRadius = "6px"
 showWidgetBorder = true
-showSidebarBorder = false
-linkColor = "#315DEB"
+showSidebarBorder = true
+linkColor = "#554BD8"
 linkUnderline = false
 greenColor = "#087F83"
 greenBackgroundColor = "#CBEAE7"
 greenTextColor = "#075B60"
-blueColor = "#315DEB"
-blueBackgroundColor = "#DAE5FF"
-blueTextColor = "#244CB8"
+blueColor = "#635BFF"
+blueBackgroundColor = "#ECEBFF"
+blueTextColor = "#4F46C8"
 yellowBackgroundColor = "#F3EAD4"
 yellowTextColor = "#705318"
 
 [theme.sidebar]
-backgroundColor = "#172D64"
-secondaryBackgroundColor = "#243E77"
-textColor = "#EAF0FC"
-primaryColor = "#315DEB"
-borderColor = "#476095"
-linkColor = "#CBD9FF"
-codeBackgroundColor = "#243E77"
-blueBackgroundColor = "#243E77"
-blueTextColor = "#D7E8F6"
-greenBackgroundColor = "#17464E"
-greenTextColor = "#91DED4"
-grayTextColor = "#C7D6F5"
+backgroundColor = "#EEF2F6"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#414552"
+primaryColor = "#635BFF"
+borderColor = "#D9E0E8"
+linkColor = "#554BD8"
+codeBackgroundColor = "#E3E8EE"
+blueBackgroundColor = "#E4E1FF"
+blueTextColor = "#4F46C8"
+greenBackgroundColor = "#E0F3EB"
+greenTextColor = "#16734A"
+grayTextColor = "#687385"
 
 [server]
 headless = true
