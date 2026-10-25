@@ -14,6 +14,8 @@ from growth.providers import TavilySearch, LiveAnalyst
 from growth.report import export_bundle, markdown_text
 from growth.panels import activity_panel, review_panel, benchmark_panel
 from growth.website import resolve_website
+from growth.dashboard import overview_banner, card_surfaces
+from growth.usage import summarize
 
 ROOT = Path(__file__).resolve().parent
 # Only local_app.py injects these settings. Public app.py never reads .env or
@@ -97,10 +99,18 @@ def advance(payload):
 st.caption("FI GROWTH  /  RESEARCH WORKSPACE")
 st.title("Growth overview")
 st.caption('Checking acquisition · Competitor intelligence · Campaign planning')
+card_surfaces()
+current_result = st.session_state.result
+current_recorded = st.session_state.get('mode', 'Recorded evidence demo') == 'Recorded evidence demo'
+current_name = st.session_state.get('client_name', demo_request().home.name if current_recorded else '')
+current_market = st.session_state.get('client_market', demo_request().market if current_recorded else '')
+overview_banner(current_name, current_market,
+                current_result['status'].capitalize() if current_result else ('Recorded demo' if current_recorded else 'Ready to research'))
 
 active = st.session_state.result is not None
 default = demo_request()
-setup_card = st.container(border=True, key='client_setup')
+setup_region = st.expander('Client & research setup', expanded=False) if active else st.container()
+setup_card = setup_region.container(border=True, key='client_setup')
 with setup_card:
     st.subheader('Research setup')
     top = st.columns([3,1])
@@ -111,7 +121,7 @@ recorded = mode == 'Recorded evidence demo'
 with st.sidebar:
     st.markdown('### :material/account_balance: FI Growth')
     st.caption('STRATEGIST WORKSPACE')
-    st.markdown('**:violet[:material/dashboard: Growth intelligence]**')
+    st.badge('Growth intelligence', icon=':material/dashboard:', color='blue')
     st.divider()
     st.markdown('#### Connections')
     st.caption('Choose the client and market at the top of the workspace.')
@@ -228,23 +238,6 @@ if not result:
         st.write("One market. Three competitors. A checking-account brief your growth team can inspect and act on.")
         st.caption("Recorded evidence demo · No API keys needed · Human approval before export" if recorded else "Live public-source research · Bring your own API keys · Human approval before export")
     st.space("small")
-    steps = st.columns(4,gap="medium")
-    with steps[0].container(border=True):
-        st.badge("01 / DISCOVER",icon=":material/travel_explore:",color="blue")
-        st.subheader("Map your alternatives")
-        st.write("Review three candidate institutions and confirm the market you want to compare.")
-    with steps[1].container(border=True):
-        st.badge("02 / COMPARE",icon=":material/fact_check:",color="blue")
-        st.subheader("See the terms clearly")
-        st.write("Compare checking products with source evidence and explicit gaps.")
-    with steps[2].container(border=True):
-        st.badge("03 / STRATEGY",icon=":material/experiment:",color="blue")
-        st.subheader("Choose what to test")
-        st.write("Review growth hypotheses, experiments and metrics before sharing your brief.")
-    with steps[3].container(border=True):
-        st.badge('04 / BENCHMARKS',icon=':material/query_stats:',color='blue')
-        st.subheader('Ground the economics')
-        st.write('Research public CPA evidence, then inspect the strategy review and revision before approving.')
     st.caption(":material/arrow_back: Choose Live research and your client at the top, or explore the recorded demo. Connect live keys in the sidebar.")
     st.stop()
 
@@ -294,14 +287,24 @@ profiles = result.get("profiles",[])
 facts = [f for p in profiles for f in p["facts"].values()]
 supported = sum(f["status"] == "Source-supported" for f in facts)
 cols = st.columns(4, gap='small')
-cols[0].metric("Institutions",str(len(profiles)),border=True)
-cols[1].metric("Evidence",f"{supported} / {len(facts)}",border=True,help="Source-supported fields out of all compared fields.")
-cols[2].metric("Hypotheses",str(len(result["hypotheses"])),border=True)
-cols[3].metric("Review status",status.removeprefix("awaiting ").capitalize(),border=True)
+with cols[0].container(border=True, key='kpi_institutions'):
+    st.badge('RESEARCH COVERAGE', color='blue', icon=':material/account_balance:')
+    st.metric("Institutions",str(len(profiles)))
+with cols[1].container(border=True, key='kpi_evidence'):
+    st.badge('SOURCE QUALITY', color='green', icon=':material/fact_check:')
+    st.metric("Evidence",f"{supported} / {len(facts)}",help="Source-supported fields out of all compared fields.")
+with cols[2].container(border=True, key='kpi_hypotheses'):
+    st.badge('CAMPAIGN PLANNING', color='orange', icon=':material/campaign:')
+    st.metric("Hypotheses",str(len(result["hypotheses"])))
+with cols[3].container(border=True, key='kpi_cost'):
+    totals = summarize(result.get('usage', []))
+    st.badge('AI USAGE', color='violet', icon=':material/query_stats:')
+    st.metric('Known AI subtotal' if totals['unpriced_calls'] else 'AI model cost', f"${totals['total_cost_usd']:.6f}")
+    st.caption('Partial estimate · inspect activity' if totals['unpriced_calls'] else 'Recorded replay · no API calls' if result['mode']=='recorded' else 'Includes cache writes · search billed separately')
 
 brief, evidence, benchmarks, revisions, trace, method = st.tabs(["Comparison & opportunities","Evidence & gaps","Benchmarks","Review & revision","Agent activity & costs","How it works"])
 with brief:
-    with st.container(border=True):
+    with st.container(border=True, key='takeaway_card'):
         st.subheader('Strategist takeaway')
         st.caption('CLIENT CONTEXT · provided by the strategist')
         st.write(markdown_text(result['request'].get('client_brief') or 'Not provided; confirm the client goal and problem.'))
