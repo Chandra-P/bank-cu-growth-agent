@@ -44,3 +44,8 @@ Enter a business-level client goal, run the recorded demo and confirm competitor
 ## Discovery to proposal decision demo
 
 Enable Explore the discovery checkpoint in the recorded setup, start research and confirm competitors. At the new checkpoint, inspect the research snapshot and continue with the problem unknown. Show the Discovery needed decision, focused questions and zero campaign concepts; campaign/benchmark/revision calls are skipped. Click Complete discovery without repeating research. Enter an explicitly illustrative client-reported goal, timeframe, application-completion barrier, supporting observation and measurable success definition, then confirm. Explain that the recorded concepts remain curated; a live run uses the structured diagnosis in Strategy prompts. Show Recommendation logic & measurement on a campaign, then review/revision, costs and final human approval. Distinguish client-reported problems from source-supported public terms. Do not claim that checkbox confirmation proves a diagnosis or that public competitor research identifies an internal funnel problem.
+
+
+## Proposal planner demonstration
+
+After a campaign-ready run, open Proposal planner. State that USD 300–600 all-in CPA and the suggested channel shares are strategist assumptions, not verified benchmarks. With target 500 and base CPA 450, show USD 225,000 total. Include paid social to show 60/25/15 allocations (135,000 / 56,250 / 33,750). Save; change the target and show approval is blocked until saving or discarding. Explain that budget shares are not channel account shares and AI usage cost is separate. Final approval exports the saved scenario, not unsaved widget values. No spend is executed.

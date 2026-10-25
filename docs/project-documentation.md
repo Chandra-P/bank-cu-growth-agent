@@ -96,9 +96,14 @@ The handout's provided solution documents were not consulted during this impleme
 
 ### Four-agent release update
 
-Current workflow: Discovery → human competitor confirmation → Research → Strategy draft → Benchmarks → Strategy critique → one revision → human approval/export. Only checking and direct mail/display/paid social are supported. The original architecture above records the initial baseline; README and docs/verification.md describe the current release. Activity/cost tracking uses provider response metadata, not fabricated token counts. Costs are separate input/output estimates with dated model pricing, cache-read handling and explicit unknowns. Search credits are tracked separately. No LangSmith service is enabled. Campaign-budget calculation and internal benchmarks/rate cards are future increments.
+Current workflow: Discovery → human competitor confirmation → Research → Strategy draft → Benchmarks → Strategy critique → one revision → human approval/export. Only checking and direct mail/display/paid social are supported. The original architecture above records the initial baseline; README and docs/verification.md describe the current release. Activity/cost tracking uses provider response metadata, not fabricated token counts. Costs are separate input/output estimates with dated model pricing, cache-read handling and explicit unknowns. Search credits are tracked separately. No LangSmith service is enabled. Editable all-in proposal scenarios are now available; internal benchmarks/rate cards and optimized forecasts remain future increments.
 
 
 ## Discovery to proposal checkpoint
 
 Live workflow: competitor confirmation → institution research → strategist discovery checkpoint → ready: campaign draft, benchmark research, critique and one revision; incomplete: focused discovery questions with no campaign/benchmark/model calls → final human review/export. Refining the discovery brief reuses completed research. The four logical roles are unchanged. The default recorded replay retains its curated scenario; its optional checkpoint demonstrates readiness logic with zero external calls. Missing or explicitly unknown goal, timeframe, problem, observation, success definition or confirmation withholds campaigns. Client-reported inputs remain separate from source-supported public claims.
+
+
+## Funded checking proposal scenarios
+
+The Proposal planner uses strategist-provided all-in CPA assumptions (USD 300/450/600) and an explicitly entered funded-account target. Suggested channel envelopes are 70/30 direct mail/display and 60/25/15 when paid social is selected. Values are editable; the numerical split is a heuristic, not a verified industry benchmark. Exact-cent allocation reconciles to the total. No included costs are added again and no channel account-contribution forecast is inferred. Save before approval; unsaved edits block approval, approved/rejected values are locked, and saved inputs/totals are retained in gated Markdown and JSON exports. The calculator makes no provider calls. It does not rank a preferred campaign or automatically adopt public CPA candidates.

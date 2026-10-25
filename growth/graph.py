@@ -18,6 +18,7 @@ from .models import ClientDiscovery
 
 
 class RunState(TypedDict, total=False):
+    proposal: dict | None
     decision: str
     discovery_questions: list[str]
     request: dict
@@ -49,7 +50,7 @@ class RunState(TypedDict, total=False):
 
 
 def new_state(request: ResearchRequest, mode: str) -> RunState:
-    return dict(request=request.model_dump(), run_id=str(uuid4()), mode=mode, created_at=datetime.now(timezone.utc).isoformat(), status="discovering", approved=False, approval={}, candidates=[], competitors=[], profiles=[], sources=[], active_sources=[], current_profile={}, index=0, round=0, hypotheses=[], strategist_takeaway=None, warnings=[], trace=[], usage=[], benchmarks={}, review_findings=[], revision_instructions='', revision_count=0, draft_hypotheses=[], draft_takeaway=None)
+    return dict(proposal=None, request=request.model_dump(), run_id=str(uuid4()), mode=mode, created_at=datetime.now(timezone.utc).isoformat(), status="discovering", approved=False, approval={}, candidates=[], competitors=[], profiles=[], sources=[], active_sources=[], current_profile={}, index=0, round=0, hypotheses=[], strategist_takeaway=None, warnings=[], trace=[], usage=[], benchmarks={}, review_findings=[], revision_instructions='', revision_count=0, draft_hypotheses=[], draft_takeaway=None)
 
 
 def build_graph(search, analyst):
@@ -144,7 +145,7 @@ def build_graph(search, analyst):
         trace = [*state['trace'], {'agent':'Strategy', 'action':'strategy:discovery-checkpoint', 'outcome':'discovery needed' if questions else 'campaign planning ready'}]
         return {'request':request, 'decision':'discovery needed' if questions else 'campaign planning ready', 'discovery_questions':questions, 'trace':trace,
                 'hypotheses':[], 'strategist_takeaway':None, 'review_findings':[], 'revision_instructions':'', 'revision_count':0, 'draft_hypotheses':[], 'draft_takeaway':None,
-                'approved':False, 'approval':{}, 'benchmarks':{}, 'status':'analyzing'}
+                'approved':False, 'approval':{}, 'proposal':None, 'benchmarks':{}, 'status':'analyzing'}
 
     def analyze(state):
         trace, warnings = list(state["trace"]), list(state["warnings"])

@@ -66,6 +66,18 @@ def render_brief(state):
     lines += ['', '## Public benchmark research', markdown_text(state.get('benchmarks',{}).get('limitations','Not available'))]
     for benchmark in state.get('benchmarks',{}).get('benchmarks',[]):
         lines.append(markdown_text(json.dumps(benchmark, ensure_ascii=False)))
+    proposal = state.get('proposal')
+    if proposal:
+        from decimal import Decimal
+        inputs = proposal['inputs']
+        lines += ['', '## Proposal scenario — strategist assumptions', proposal['assumption_source'], proposal['mix_source'], proposal['cost_basis'],
+                  '**Selected concept:** '+markdown_text(inputs['campaign']), '**Target funded accounts:** '+str(inputs['target_accounts']),
+                  '**Account definition:** '+markdown_text(inputs['account_definition']), '**Planning notes:** '+markdown_text(inputs['assumption_note']),
+                  '| Scenario | Assumed all-in CPA | Total budget | Direct mail | Display | Paid social |', '| --- | --- | --- | --- | --- | --- |']
+        for row in proposal['scenarios']:
+            money = [f"USD {Decimal(row[k]):,.2f}" for k in ('assumed_cpa_usd','total_usd','direct_mail_usd','display_usd','paid_social_usd')]
+            lines.append('| '+row['scenario']+' | '+' | '.join(money)+' |')
+        lines += [proposal['limitations'], proposal.get('planning_scope',''), 'Channel budget envelopes include allocated all-in costs. No extra costs or per-channel account forecasts are added.']
     lines += ["## Gaps and review notes", ""]
     for profile in profiles:
         if profile["gaps"]:
@@ -86,6 +98,6 @@ def export_bundle(state):
     approval = state.get("approval",{})
     if not state.get("approved") or state.get("status") != "approved" or approval.get("approved") is not True or approval.get("run_id") != state.get("run_id"):
         raise PermissionError("Approve this run before exporting.")
-    allowed = ["request","run_id","mode","created_at","status","approval","competitors","profiles","sources","hypotheses","strategist_takeaway","benchmarks","review_findings","revision_instructions","revision_count","draft_hypotheses","draft_takeaway","usage","warnings","trace",'decision','discovery_questions']
+    allowed = ["request","run_id","mode","created_at","status","approval","competitors","profiles","sources","hypotheses","strategist_takeaway","benchmarks","review_findings","revision_instructions","revision_count","draft_hypotheses","draft_takeaway","usage","warnings","trace",'decision','discovery_questions','proposal']
     payload = {k:state.get(k) for k in allowed}
     return render_brief(state), json.dumps(payload, ensure_ascii=False, indent=2)

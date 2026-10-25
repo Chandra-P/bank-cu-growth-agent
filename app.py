@@ -17,6 +17,7 @@ from growth.website import resolve_website
 from growth.dashboard import overview_banner, card_surfaces
 from growth.usage import summarize
 from growth.discovery import checkpoint_form
+from growth.planning import planner_panel, save_proposal
 
 ROOT = Path(__file__).resolve().parent
 # Only local_app.py injects these settings. Public app.py never reads .env or
@@ -39,7 +40,7 @@ def reset_research():
     for key in ["graph", "config", "result", "run_error"]:
         st.session_state[key] = None
     for key in list(st.session_state):
-        if key.startswith(("candidate_", "review_", "discovery_")) or key == "reviewed_evidence":
+        if key.startswith(("candidate_", "review_", "discovery_", 'proposal_')) or key == "reviewed_evidence":
             del st.session_state[key]
 
 
@@ -315,7 +316,7 @@ with st.container(border=True, key='takeaway_card'):
         st.caption('Public research is retained. Resolve the diagnosis before selecting channels or forecasting accounts.')
         if status == 'awaiting review' and st.button('Complete discovery without repeating research', key='refine_discovery', type='primary'):
             for key in list(st.session_state):
-                if key.startswith(('discovery_', 'review_')) or key=='reviewed_evidence':
+                if key.startswith(('discovery_', 'review_', 'proposal_')) or key=='reviewed_evidence':
                     del st.session_state[key]
             st.session_state.graph.update_state(st.session_state.config, {'status':'awaiting discovery', 'approved':False, 'approval':{}}, as_node='save_profile')
             advance(None)
@@ -355,7 +356,7 @@ with cols[3].container(border=True, key='kpi_cost'):
     st.metric('Known AI subtotal' if totals['unpriced_calls'] else 'AI model cost', f"${totals['total_cost_usd']:.6f}")
     st.caption('Partial estimate · inspect activity' if totals['unpriced_calls'] else 'Recorded replay · no API calls' if result['mode']=='recorded' else 'Includes cache writes · search billed separately')
 
-brief, evidence, benchmarks, revisions, trace, method = st.tabs(["Comparison & opportunities","Evidence & gaps","Benchmarks","Review & revision","Agent activity & costs","How it works"])
+brief, evidence, benchmarks, proposal_tab, revisions, trace, method = st.tabs(["Comparison & opportunities","Evidence & gaps","Benchmarks",'Proposal planner',"Review & revision","Agent activity & costs","How it works"])
 with brief:
     with st.container(border=True,key="comparison_card"):
         st.badge("MARKET SNAPSHOT",icon=":material/compare_arrows:",color="blue")
@@ -426,6 +427,17 @@ with trace:
 with benchmarks:
     benchmark_panel(result)
 
+with proposal_tab:
+    proposal_inputs = planner_panel(result)
+    if proposal_inputs is not None:
+        try:
+            st.session_state.result = save_proposal(st.session_state.graph, st.session_state.config, result, proposal_inputs)
+            st.session_state['proposal_dirty'] = False
+            st.session_state['reviewed_evidence'] = False
+            st.rerun()
+        except ValueError:
+            st.error('The scenario could not be saved. Complete discovery and review the planning inputs.')
+
 with revisions:
     review_panel(result)
 
@@ -443,10 +455,14 @@ if status == "awaiting review":
         st.badge("HUMAN CHECKPOINT",icon=":material/verified_user:",color="blue")
         st.subheader("Ready to share this brief?")
         st.write("Review the evidence, missing terms and proposed tests. Your approval enables downloads; it does not publish a campaign.")
+        if st.session_state.get('proposal_dirty', False):
+            st.warning('Unsaved proposal edits: save or discard them in Proposal planner before approving.')
+        if result.get('proposal'):
+            st.caption('Approval includes the saved proposal scenario and its assumptions. It is not a guarantee of CPA or acquired accounts.')
         note = st.text_area("Reviewer notes",key="review_note",max_chars=1000,placeholder="Record caveats or follow-up checks for your team.")
         reviewed = st.checkbox("I reviewed the evidence and understand the gaps and hypotheses.",key="reviewed_evidence")
         with st.container(horizontal=True):
-            approve = st.button("Approve and enable downloads",key="approve_report",type="primary",disabled=not reviewed,icon=":material/check:")
+            approve = st.button("Approve and enable downloads",key="approve_report",type="primary",disabled=not reviewed or st.session_state.get('proposal_dirty', False),icon=":material/check:")
             reject = st.button("Reject this brief",key="reject_report",icon=":material/close:")
     if approve or reject:
         advance(Command(resume={"approve":bool(approve and reviewed),"note":note}))
