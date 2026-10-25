@@ -17,7 +17,7 @@ from growth.website import resolve_website
 from growth.dashboard import overview_banner, card_surfaces
 from growth.usage import summarize
 from growth.discovery import checkpoint_form
-from growth.planning import planner_panel, save_proposal
+from growth.planning import planner_panel, save_proposal, target_alignment
 
 ROOT = Path(__file__).resolve().parent
 # Only local_app.py injects these settings. Public app.py never reads .env or
@@ -40,7 +40,7 @@ def reset_research():
     for key in ["graph", "config", "result", "run_error"]:
         st.session_state[key] = None
     for key in list(st.session_state):
-        if key.startswith(("candidate_", "review_", "discovery_", 'proposal_')) or key == "reviewed_evidence":
+        if key.startswith(("candidate_", "review_", 'reviewed_', "discovery_", 'proposal_')):
             del st.session_state[key]
 
 
@@ -316,7 +316,7 @@ with st.container(border=True, key='takeaway_card'):
         st.caption('Public research is retained. Resolve the diagnosis before selecting channels or forecasting accounts.')
         if status == 'awaiting review' and st.button('Complete discovery without repeating research', key='refine_discovery', type='primary'):
             for key in list(st.session_state):
-                if key.startswith(('discovery_', 'review_', 'proposal_')) or key=='reviewed_evidence':
+                if key.startswith(('discovery_', 'review_', 'reviewed_', 'proposal_')):
                     del st.session_state[key]
             st.session_state.graph.update_state(st.session_state.config, {'status':'awaiting discovery', 'approved':False, 'approval':{}}, as_node='save_profile')
             advance(None)
@@ -434,6 +434,7 @@ with proposal_tab:
             st.session_state.result = save_proposal(st.session_state.graph, st.session_state.config, result, proposal_inputs)
             st.session_state['proposal_dirty'] = False
             st.session_state['reviewed_evidence'] = False
+            st.session_state['reviewed_target_alignment'] = False
             st.rerun()
         except ValueError:
             st.error('The scenario could not be saved. Complete discovery and review the planning inputs.')
@@ -459,13 +460,22 @@ if status == "awaiting review":
             st.warning('Unsaved proposal edits: save or discard them in Proposal planner before approving.')
         if result.get('proposal'):
             st.caption('Approval includes the saved proposal scenario and its assumptions. It is not a guarantee of CPA or acquired accounts.')
+        alignment = target_alignment(result)
+        target_confirmed = False
+        if alignment['status']=='matched':
+            st.success(alignment['message'])
+        elif alignment['status'] in ('mismatch','incompatible'):
+            st.error(alignment['message'])
+        elif alignment['status']=='assumption':
+            st.warning(alignment['message'])
+            target_confirmed = st.checkbox('I reviewed the budget target against the client goal; any unconfirmed target is explicitly a planning assumption.', key='reviewed_target_alignment')
         note = st.text_area("Reviewer notes",key="review_note",max_chars=1000,placeholder="Record caveats or follow-up checks for your team.")
         reviewed = st.checkbox("I reviewed the evidence and understand the gaps and hypotheses.",key="reviewed_evidence")
         with st.container(horizontal=True):
-            approve = st.button("Approve and enable downloads",key="approve_report",type="primary",disabled=not reviewed or st.session_state.get('proposal_dirty', False),icon=":material/check:")
+            approve = st.button("Approve and enable downloads",key="approve_report",type="primary",disabled=not reviewed or st.session_state.get('proposal_dirty', False) or alignment['status'] in ('mismatch','incompatible') or (alignment['status']=='assumption' and not target_confirmed),icon=":material/check:")
             reject = st.button("Reject this brief",key="reject_report",icon=":material/close:")
     if approve or reject:
-        advance(Command(resume={"approve":bool(approve and reviewed),"note":note}))
+        advance(Command(resume={"approve":bool(approve and reviewed),"note":note, 'target_alignment_confirmed':target_confirmed}))
         st.rerun()
 elif status == "approved":
     st.success("Approved for export. The report retains its evidence, limitations and reviewer note.")

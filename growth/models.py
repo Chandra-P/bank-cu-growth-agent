@@ -42,6 +42,8 @@ class Institution(BaseModel):
 
 
 class ClientDiscovery(BaseModel):
+    target_accounts: int | None = Field(default=None, gt=0, le=1000000, strict=True)
+    target_outcome: Literal['Not specified', 'Opened accounts', 'Funded checking accounts', 'Activated accounts'] = 'Not specified'
     goal: str = Field(default='', max_length=500)
     timeframe: str = Field(default='', max_length=100)
     problem: Literal['Unknown / needs discovery', 'Awareness', 'Application completion', 'Account funding', 'Account activation'] = 'Unknown / needs discovery'

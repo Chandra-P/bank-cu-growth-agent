@@ -31,6 +31,7 @@ class PlanningUiTests(unittest.TestCase):
         self.assertFalse(app.exception)
         self.assertFalse(app.checkbox(key='reviewed_evidence').value)
         app.checkbox(key='reviewed_evidence').check().run()
+        app.checkbox(key='reviewed_target_alignment').check().run()
         app.button(key='approve_report').click().run()
         self.assertFalse(app.exception)
         result = app.session_state['result']

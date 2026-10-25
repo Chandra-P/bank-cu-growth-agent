@@ -44,7 +44,7 @@ class PlanningTests(unittest.TestCase):
         self.assertFalse(result['approved'])
         with self.assertRaises(PermissionError):
             export_bundle(result)
-        result = graph.invoke(Command(resume={'approve':True,'note':'Reviewed assumptions'}), config)
+        result = graph.invoke(Command(resume={'approve':True,'note':'Reviewed assumptions','target_alignment_confirmed':True}), config)
         md, raw = export_bundle(result)
         self.assertIn('225,000.00', md)
         self.assertEqual(json.loads(raw)['proposal']['assumption_source'], 'Strategist-provided planning assumptions; not verified performance benchmarks')

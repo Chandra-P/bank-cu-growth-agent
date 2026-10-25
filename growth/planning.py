@@ -6,6 +6,30 @@ CHANNELS = ('direct_mail', 'display', 'paid_social')
 ASSUMPTION_SOURCE = 'Strategist-provided planning assumptions; not verified performance benchmarks'
 
 
+def proposal_default_target(result):
+    discovery = result.get('request', {}).get('client_discovery') or {}
+    return discovery.get('target_accounts') if discovery.get('target_outcome')=='Funded checking accounts' and discovery.get('target_accounts') else 500
+
+
+def target_alignment(result, proposal=None):
+    proposal = proposal if proposal is not None else result.get('proposal')
+    discovery = result.get('request', {}).get('client_discovery') or {}
+    expected = discovery.get('target_accounts')
+    outcome = discovery.get('target_outcome', 'Not specified')
+    actual = proposal['inputs']['target_accounts'] if proposal else None
+    status, message = 'not applicable', 'No saved proposal budget.'
+    if proposal:
+        if expected is not None and expected != actual:
+            status, message = 'mismatch', f'Client target is {expected:,}; this budget plans {actual:,}. Match the confirmed target before saving or approving.'
+        elif outcome in ('Opened accounts', 'Activated accounts'):
+            status, message = 'incompatible', f'The client target counts {outcome.lower()}, while this CPA plans funded checking accounts. Reconcile definitions in discovery before budgeting.'
+        elif expected is not None and outcome=='Funded checking accounts':
+            status, message = 'matched', f'Budget target matches the confirmed client target: {actual:,} funded checking accounts.'
+        else:
+            status, message = 'assumption', f'No comparable funded-account client target is confirmed. The {actual:,}-account budget is a planning assumption; explicitly review target alignment before approval.'
+    return {'status':status, 'message':message, 'client_target':expected, 'client_outcome':outcome, 'budget_target':actual}
+
+
 class ProposalInputs(BaseModel):
     target_accounts: int = Field(default=500, gt=0, le=1000000, strict=True)
     cpa_low: Decimal = Field(default=Decimal('300'), gt=0, le=100000, decimal_places=2)
@@ -60,6 +84,8 @@ def save_proposal(graph, config, result, inputs):
     if result.get('status') != 'awaiting review' or not planning_available(result) or result.get('approved'):
         raise ValueError('Complete discovery and campaign drafting before saving an unapproved proposal.')
     proposal = calculate_proposal(inputs)
+    if target_alignment(result, proposal)['status'] in ('mismatch', 'incompatible'):
+        raise ValueError('Budget target does not align with the confirmed client target.')
     trace = [*result.get('trace', []), {'agent':'Strategy', 'action':'proposal:save', 'outcome':'Strategist saved assumptions; deterministic arithmetic; no API call'}]
     graph.update_state(config, {'proposal':proposal, 'trace':trace, 'approved':False, 'approval':{}})
     return dict(graph.get_state(config).values)
@@ -69,6 +95,7 @@ def mark_planner_dirty():
     import streamlit as st
     st.session_state['proposal_dirty'] = True
     st.session_state['reviewed_evidence'] = False
+    st.session_state['reviewed_target_alignment'] = False
 
 
 def change_social_mix():
@@ -87,7 +114,7 @@ def planner_panel(result):
         st.info('Complete client discovery and campaign drafting before planning a proposal budget.')
         return None
     saved = result.get('proposal')
-    defaults = ProposalInputs.model_validate(saved['inputs']) if saved else ProposalInputs()
+    defaults = ProposalInputs.model_validate(saved['inputs']) if saved else ProposalInputs(target_accounts=proposal_default_target(result))
     locked = result['status'] != 'awaiting review'
     st.info('Assumed all-in CPA: $300–$600 per funded checking account (base $450). These are strategist assumptions, not verified industry benchmarks. Included production, data, fees, incentives and media are not added a second time.')
     st.caption('Suggested allocation: 70% direct mail / 30% display; with paid social, 60% / 25% / 15%. These editable budget envelopes do not predict each channel’s account contribution.')
@@ -124,19 +151,27 @@ def planner_panel(result):
     except ValueError:
         st.error('Check that allocations total 100%, selected paid social has a positive share, low ≤ base ≤ high CPA, and definitions are filled in.')
     if preview:
+        alignment = target_alignment(result, preview)
+        if alignment['status'] in ('mismatch','incompatible'):
+            st.error(alignment['message'])
+        elif alignment['status']=='matched':
+            st.success(alignment['message'])
+        else:
+            st.warning(alignment['message'])
         st.markdown('**Editable preview — only the saved scenario enters the approved briefing.**')
         st.dataframe([{'Scenario':r['scenario'], 'Assumed CPA':f"${Decimal(r['assumed_cpa_usd']):,.2f}", 'All-in budget':f"${Decimal(r['total_usd']):,.2f}",
                        'Direct mail':f"${Decimal(r['direct_mail_usd']):,.2f}", 'Display':f"${Decimal(r['display_usd']):,.2f}", 'Paid social':f"${Decimal(r['paid_social_usd']):,.2f}"} for r in preview['scenarios']], hide_index=True)
         st.caption(preview['limitations'])
     if st.session_state['proposal_dirty']:
         st.warning('Planner edits are not saved. Save the scenario or discard edits before approving the brief.')
-    if st.button('Save proposal scenario', key='proposal_save', type='primary', disabled=locked or preview is None):
+    if st.button('Save proposal scenario', key='proposal_save', type='primary', disabled=locked or preview is None or (preview is not None and target_alignment(result,preview)['status'] in ('mismatch','incompatible'))):
         return inputs
     if not locked and st.session_state['proposal_dirty'] and st.button('Discard unsaved planner edits', key='proposal_discard'):
         for key in list(st.session_state):
             if key.startswith('proposal_'):
                 del st.session_state[key]
         st.session_state['reviewed_evidence'] = False
+        st.session_state['reviewed_target_alignment'] = False
         st.rerun()
     if saved:
         st.success('Saved scenario attached to this brief. Changes require saving again before approval.')

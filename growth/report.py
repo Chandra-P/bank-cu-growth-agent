@@ -33,7 +33,7 @@ def render_brief(state):
     discovery = request.get('client_discovery') or {}
     if discovery:
         lines += ['', '## Client-reported discovery', 'Client-reported information; not independently verified by public research.', '**Strategist confirmation:** '+('Confirmed inputs' if discovery.get('confirmed') else 'Not confirmed')]
-        for field in ('goal', 'timeframe', 'problem', 'observation', 'success_definition', 'constraints'):
+        for field in ('goal', 'timeframe', 'target_accounts', 'target_outcome', 'problem', 'observation', 'success_definition', 'constraints'):
             lines.append('**'+field.replace('_',' ').capitalize()+':** '+markdown_text(discovery.get(field) or 'Not specified'))
     if state.get('decision'):
         lines += ['', '**Planning decision:** '+state['decision']]
@@ -78,6 +78,8 @@ def render_brief(state):
             money = [f"USD {Decimal(row[k]):,.2f}" for k in ('assumed_cpa_usd','total_usd','direct_mail_usd','display_usd','paid_social_usd')]
             lines.append('| '+row['scenario']+' | '+' | '.join(money)+' |')
         lines += [proposal['limitations'], proposal.get('planning_scope',''), 'Channel budget envelopes include allocated all-in costs. No extra costs or per-channel account forecasts are added.']
+        from .planning import target_alignment
+        lines += ['**Target alignment:** '+target_alignment(state)['message']]
     lines += ["## Gaps and review notes", ""]
     for profile in profiles:
         if profile["gaps"]:
@@ -98,6 +100,11 @@ def export_bundle(state):
     approval = state.get("approval",{})
     if not state.get("approved") or state.get("status") != "approved" or approval.get("approved") is not True or approval.get("run_id") != state.get("run_id"):
         raise PermissionError("Approve this run before exporting.")
+    if state.get('proposal'):
+        from .planning import target_alignment
+        alignment = target_alignment(state)
+        if alignment['status'] in ('mismatch','incompatible') or (alignment['status']=='assumption' and approval.get('target_alignment_confirmed') is not True) or approval.get('target_alignment') != alignment:
+            raise PermissionError('The approved target alignment does not match this proposal.')
     allowed = ["request","run_id","mode","created_at","status","approval","competitors","profiles","sources","hypotheses","strategist_takeaway","benchmarks","review_findings","revision_instructions","revision_count","draft_hypotheses","draft_takeaway","usage","warnings","trace",'decision','discovery_questions','proposal']
     payload = {k:state.get(k) for k in allowed}
     return render_brief(state), json.dumps(payload, ensure_ascii=False, indent=2)

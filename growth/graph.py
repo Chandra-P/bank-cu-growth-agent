@@ -173,7 +173,14 @@ def build_graph(search, analyst):
     def review(state):
         answer = interrupt({"stage":"review", "run_id":state["run_id"], "message":"Review evidence, missing terms and hypotheses. Approve to enable export, or reject to end this run."})
         approved = answer.get("approve") is True
-        return {"approved":approved, "approval":{"approved":approved, "run_id":state["run_id"], "note":str(answer.get("note", ""))[:1000], "at":datetime.now(timezone.utc).isoformat()}, "status":"approved" if approved else "rejected"}
+        from .planning import target_alignment
+        alignment = target_alignment(state)
+        target_confirmed = answer.get('target_alignment_confirmed') is True
+        while approved and (alignment['status'] in ('mismatch','incompatible') or (alignment['status']=='assumption' and not target_confirmed)):
+            answer = interrupt({'stage':'review', 'run_id':state['run_id'], 'message':'Target alignment is unresolved. Correct the proposal or explicitly review an unconfirmed planning target before approval.', 'target_alignment':alignment})
+            approved = answer.get('approve') is True
+            target_confirmed = answer.get('target_alignment_confirmed') is True
+        return {"approved":approved, "approval":{"approved":approved, "run_id":state["run_id"], "note":str(answer.get("note", ""))[:1000], "at":datetime.now(timezone.utc).isoformat(), 'target_alignment':alignment, 'target_alignment_confirmed':target_confirmed}, "status":"approved" if approved else "rejected"}
 
     def benchmarks(state):
         trace, warnings = list(state['trace']), list(state['warnings'])

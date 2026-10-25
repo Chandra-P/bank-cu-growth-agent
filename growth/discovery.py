@@ -46,6 +46,10 @@ def checkpoint_form(request, profiles=None, sources=None):
     with st.form('discovery_checkpoint'):
         goal = st.text_input('Confirmed client goal', value=brief.goal or request.get('client_brief', '')[:500], max_chars=500, key='discovery_goal')
         timeframe = st.text_input('Goal timeframe', value=brief.timeframe, max_chars=100, key='discovery_timeframe', placeholder='For example: next quarter')
+        target = st.number_input('Client account target (0 = not agreed)', min_value=0, max_value=1000000, value=brief.target_accounts or 0, step=1, key='discovery_target')
+        outcomes = ['Not specified', 'Opened accounts', 'Funded checking accounts', 'Activated accounts']
+        outcome = st.selectbox('What does the client target count?', outcomes, index=outcomes.index(brief.target_outcome), key='discovery_outcome')
+        st.caption('These explicit fields align the proposal budget; no number is inferred from free-text goals. Funded-account CPA cannot be used as an opened/activated-account forecast.')
         problem = st.selectbox('Observed acquisition problem', PROBLEMS, index=PROBLEMS.index(brief.problem), key='discovery_problem')
         observation = st.text_area('Evidence or client observation supporting the problem', value=brief.observation, max_chars=1000, key='discovery_observation', placeholder='Describe the client-reported observation or internal funnel data; label assumptions.')
         metric = st.text_area('Success definition', value=brief.success_definition, max_chars=500, key='discovery_success', placeholder='Define opened, funded or activated accounts, threshold, window and deduplication.')
@@ -54,5 +58,5 @@ def checkpoint_form(request, profiles=None, sources=None):
         submitted = st.form_submit_button('Continue with confirmed discovery', type='primary', key='discovery_continue')
         st.caption('Incomplete discovery produces questions, not campaigns. Research will not be repeated.')
     if submitted:
-        return ClientDiscovery(goal=goal, timeframe=timeframe, problem=problem, observation=observation, success_definition=metric, constraints=constraints, confirmed=confirmed).model_dump()
+        return ClientDiscovery(goal=goal, timeframe=timeframe, target_accounts=target or None, target_outcome=outcome, problem=problem, observation=observation, success_definition=metric, constraints=constraints, confirmed=confirmed).model_dump()
     return None
