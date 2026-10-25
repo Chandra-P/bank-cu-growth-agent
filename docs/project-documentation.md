@@ -97,3 +97,8 @@ The handout's provided solution documents were not consulted during this impleme
 ### Four-agent release update
 
 Current workflow: Discovery → human competitor confirmation → Research → Strategy draft → Benchmarks → Strategy critique → one revision → human approval/export. Only checking and direct mail/display/paid social are supported. The original architecture above records the initial baseline; README and docs/verification.md describe the current release. Activity/cost tracking uses provider response metadata, not fabricated token counts. Costs are separate input/output estimates with dated model pricing, cache-read handling and explicit unknowns. Search credits are tracked separately. No LangSmith service is enabled. Campaign-budget calculation and internal benchmarks/rate cards are future increments.
+
+
+## Discovery to proposal checkpoint
+
+Live workflow: competitor confirmation → institution research → strategist discovery checkpoint → ready: campaign draft, benchmark research, critique and one revision; incomplete: focused discovery questions with no campaign/benchmark/model calls → final human review/export. Refining the discovery brief reuses completed research. The four logical roles are unchanged. The default recorded replay retains its curated scenario; its optional checkpoint demonstrates readiness logic with zero external calls. Missing or explicitly unknown goal, timeframe, problem, observation, success definition or confirmation withholds campaigns. Client-reported inputs remain separate from source-supported public claims.

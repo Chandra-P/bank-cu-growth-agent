@@ -16,6 +16,7 @@ from growth.panels import activity_panel, review_panel, benchmark_panel
 from growth.website import resolve_website
 from growth.dashboard import overview_banner, card_surfaces
 from growth.usage import summarize
+from growth.discovery import checkpoint_form
 
 ROOT = Path(__file__).resolve().parent
 # Only local_app.py injects these settings. Public app.py never reads .env or
@@ -38,7 +39,7 @@ def reset_research():
     for key in ["graph", "config", "result", "run_error"]:
         st.session_state[key] = None
     for key in list(st.session_state):
-        if key.startswith(("candidate_", "review_")) or key == "reviewed_evidence":
+        if key.startswith(("candidate_", "review_", "discovery_")) or key == "reviewed_evidence":
             del st.session_state[key]
 
 
@@ -84,6 +85,7 @@ def advance(payload):
         with st.status("Working through the research workflow…", expanded=True) as status:
             labels = {"discover":"Discovering competitor candidates", "confirm":"Competitor set confirmed", "collect":"Collecting public-source evidence", "extract":"Checking extracted facts and research gaps", "save_profile":"Institution profile assembled", "analyze":"Drafting growth hypotheses", "review":"Review decision recorded"}
             labels.update(benchmarks='Researching public acquisition benchmarks', critique='Strategy agent reviewing the draft', revise='Revising recommendations once')
+            labels['discovery_checkpoint'] = 'Client discovery checkpoint'
             for event in st.session_state.graph.stream(payload, st.session_state.config, stream_mode="updates"):
                 for node in event:
                     if node in labels:
@@ -199,7 +201,10 @@ with setup_card:
         confirmed = st.checkbox('I confirm this is the correct client FI and official website.',key='website_confirmed',disabled=active or not valid_domain)
     client_brief = st.text_area('Client goals or problem to solve',key='client_brief',max_chars=2000,disabled=active,placeholder='Annual goals, acquisition challenges and priorities. Business context only.')
     outage = False
+    discovery_demo = False
     if recorded:
+        discovery_demo = st.checkbox('Explore the discovery checkpoint', key='demo_discovery', disabled=active)
+        st.caption('Enable to test discovery questions and refinement with zero API calls. Recorded campaign examples remain curated, not personalized.')
         with st.expander('Demo controls'):
             outage = st.checkbox('Simulate a Skyla source outage',key='demo_outage',disabled=active)
     start = st.button('Explore recorded demo' if recorded else 'Start live research',key='start_research',type='primary',disabled=active or (not recorded and not (ready and valid_domain and confirmed and len(market.strip())>=2)))
@@ -207,6 +212,8 @@ with setup_card:
         try:
             request = default if recorded else ResearchRequest(home=Institution(name=name,domain=domain,reason='Client identity and official domain confirmed by strategist'),market=market)
             request = request.model_copy(update={'client_brief':client_brief.strip()})
+            if recorded and discovery_demo:
+                request = ResearchRequest(**{**request.model_dump(), 'client_discovery':{}})
             if recorded:
                 search,analyst = DemoSearch(outage=outage),DemoAnalyst()
             else:
@@ -250,7 +257,15 @@ else:
     st.info("LIVE RESEARCH · Model-extracted claims are checked against collected official-domain excerpts. Review current full disclosures before acting.")
 
 status = result["status"]
-st.progress({"awaiting competitors":.2,"researching":.45,"awaiting review":.85,"approved":1.,"rejected":1.}.get(status,.1), text=status.capitalize())
+st.progress({"awaiting competitors":.2,"researching":.45,'awaiting discovery':.65,"awaiting review":.85,"approved":1.,"rejected":1.}.get(status,.1), text=status.capitalize())
+
+if status == 'awaiting discovery':
+    st.info('Research retained. Campaigns are paused until this discovery checkpoint is completed.')
+    answer = checkpoint_form(result['request'], result.get('profiles'), result.get('sources'))
+    if answer is not None:
+        advance(Command(resume=answer))
+        st.rerun()
+    st.stop()
 
 if status == "awaiting competitors":
     st.subheader("Confirm your comparison set")
@@ -287,17 +302,36 @@ with st.container(border=True, key='takeaway_card'):
     st.subheader('Strategist takeaway')
     st.caption('CLIENT GOAL / PROBLEM · provided by the strategist')
     client_goal = result['request'].get('client_brief', '').strip()
+    confirmed_discovery = result['request'].get('client_discovery') or {}
+    client_goal = confirmed_discovery.get('goal') or client_goal
     if client_goal:
         st.info(markdown_text(client_goal), icon=':material/target:')
     else:
         st.warning('Client goal needs confirmation.', icon=':material/help:')
+    if result.get('decision') == 'discovery needed':
+        st.warning('Discovery needed — campaign generation withheld.')
+        for question in result.get('discovery_questions', []):
+            st.write('• '+question)
+        st.caption('Public research is retained. Resolve the diagnosis before selecting channels or forecasting accounts.')
+        if status == 'awaiting review' and st.button('Complete discovery without repeating research', key='refine_discovery', type='primary'):
+            for key in list(st.session_state):
+                if key.startswith(('discovery_', 'review_')) or key=='reviewed_evidence':
+                    del st.session_state[key]
+            st.session_state.graph.update_state(st.session_state.config, {'status':'awaiting discovery', 'approved':False, 'approval':{}}, as_node='save_profile')
+            advance(None)
+            st.rerun()
+    elif result.get('decision') == 'campaign planning ready':
+        st.badge('Discovery confirmed · campaign concepts for review', color='green')
+        st.markdown('**Client-reported problem:** '+markdown_text(confirmed_discovery.get('problem', '')))
+        st.write(markdown_text(confirmed_discovery.get('observation', '')))
+        st.caption('Client-reported diagnosis; not independently established by public research.')
     takeaway = result.get('strategist_takeaway')
     if takeaway:
         st.markdown('**Research finding:** '+markdown_text(takeaway['finding']))
         st.markdown('**Strategic implication:** '+markdown_text(takeaway['implication']))
         st.markdown('**Client validation question:** '+markdown_text(takeaway['client_question']))
         st.caption('Evidence: '+', '.join(takeaway['source_ids']))
-    else:
+    elif result.get('decision') != 'discovery needed':
         st.info('A supported takeaway is unavailable; review the comparison and gaps.')
     if result['mode']=='recorded':
         st.caption('Curated examples are not personalized to the entered client context. Live mode uses the client brief.')
@@ -331,6 +365,8 @@ with brief:
         st.dataframe(rows,hide_index=True,height=365,alt="Checking product comparison for the home institution and three confirmed competitors")
         st.caption("Not verified = insufficient evidence. It does not mean zero fees, no requirement, or no available offer.")
     st.subheader("Campaign concepts for the client discussion")
+    if result.get('decision') == 'discovery needed':
+        st.info('No campaign concepts generated. Complete discovery using the questions above.')
     st.caption("Inference for human review · no promised uplift or unverified claims of product superiority")
     opportunity_columns = st.columns(3, gap="medium")
     for i,h in enumerate(result["hypotheses"],1):
@@ -343,12 +379,21 @@ with brief:
             st.markdown('**Message:** '+markdown_text(h.get('message','To develop')))
             st.caption('CHANNELS · '+', '.join(h.get('channels',[])))
             st.write(markdown_text(h.get('channel_rationale','To confirm')))
-            with st.expander("Experiment & success metric"):
+            with st.expander("Recommendation logic & measurement"):
+                discovery = result['request'].get('client_discovery') or {}
+                st.markdown('**1. Client problem:** '+markdown_text(discovery.get('problem') or 'Recorded illustrative scenario; validate with the client.'))
+                st.markdown('**2. Public evidence:** '+markdown_text(h['rationale']))
+                st.caption('Supporting sources: '+', '.join(h['source_ids']))
+                st.markdown('**3. Proposed intervention**')
                 st.caption("THE EXPERIMENT")
                 st.write(markdown_text(h["experiment"]))
+                st.markdown('**4. Channel role:** '+markdown_text(h.get('channel_rationale','To confirm')))
+                if discovery.get('success_definition'):
+                    st.markdown('**Client-agreed success definition:** '+markdown_text(discovery['success_definition']))
                 st.caption("WHAT TO MEASURE")
                 st.write(markdown_text(h["success_metric"]))
                 st.markdown('**Guardrail:** '+markdown_text(h.get('guardrail','To confirm')))
+                st.markdown('**Unresolved constraints:** '+markdown_text(discovery.get('constraints') or 'Budget, audience availability and execution constraints require confirmation.'))
                 st.markdown('**Ask the client:** '+markdown_text(h.get('client_question','Confirm the goal.')))
             with st.expander("Evidence & limitations",icon=":material/policy:"):
                 st.caption("Limit: " + markdown_text(h["caveat"]))
@@ -386,9 +431,10 @@ with revisions:
 
 with method:
     st.subheader("A small, stateful agent system")
-    st.code("Discovery → HUMAN CONFIRMS → Research → Strategy draft\n    → Benchmarks → Strategy review → One revision → HUMAN APPROVES → Export",language=None)
+    st.code("Discovery → HUMAN CONFIRMS COMPETITORS → Research\n    → CLIENT DISCOVERY CHECKPOINT\n    → Ready: Strategy → Benchmarks → Review → One revision\n    → Incomplete: Discovery questions, no campaigns\n    → HUMAN APPROVES → Export",language=None)
     st.write('Discovery proposes competitors. Research collects official checking evidence and selects one useful follow-up per institution. Strategy connects findings to client needs. Benchmarks researches public acquisition economics. Strategy reviews and revises once. These are four logical roles sharing a model client, not four servers. LangGraph manages state and human checkpoints.')
     st.write('Tool use is orchestrated Python API calls, not autonomous model function-calling. Models propose structured research decisions; the graph validates and executes them. Cost tracking is session-local; no external tracing account is required.')
+    st.write('Live runs require a strategist discovery checkpoint after research. Missing goal, timeframe, diagnosed problem, supporting observation, success definition or confirmation withholds campaign generation. Discovery questions use a deterministic checklist, not another model or agent. Refining discovery reuses research. The default recorded replay retains its curated scenario; Demo controls can exercise the checkpoint without external calls.')
     st.write("Limits: three competitors, two search rounds per institution, five results per search, one retry per remote operation. Memory is scoped to this session. Public product evidence only; no campaign publishing.")
 
 st.divider()

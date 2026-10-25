@@ -41,11 +41,27 @@ class Institution(BaseModel):
         return domain
 
 
+class ClientDiscovery(BaseModel):
+    goal: str = Field(default='', max_length=500)
+    timeframe: str = Field(default='', max_length=100)
+    problem: Literal['Unknown / needs discovery', 'Awareness', 'Application completion', 'Account funding', 'Account activation'] = 'Unknown / needs discovery'
+    observation: str = Field(default='', max_length=1000)
+    success_definition: str = Field(default='', max_length=500)
+    constraints: str = Field(default='', max_length=500)
+    confirmed: bool = False
+
+    @field_validator('goal', 'timeframe', 'observation', 'success_definition', 'constraints')
+    @classmethod
+    def trim_text(cls, value):
+        return value.strip()
+
+
 class ResearchRequest(BaseModel):
     home: Institution
     market: str = Field(min_length=2, max_length=160)
     product: str = "Consumer checking accounts"
     client_brief: str = Field(default="", max_length=2000)
+    client_discovery: ClientDiscovery | None = None
 
     @field_validator("market")
     @classmethod

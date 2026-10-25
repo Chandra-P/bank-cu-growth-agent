@@ -8,7 +8,8 @@ def activity_panel(result):
     st.subheader('Agent activity & AI costs')
     st.caption('Four logical agents coordinated by LangGraph. Strategy performs the review and one revision; it is not a fifth agent.')
     st.caption('Live cost estimates include ordinary input, cache reads, cache writes and output. Cache writes are part of input cost and are counted once.')
-    st.code('Discovery → Human confirms → Research → Strategy draft\n    → Benchmarks → Strategy review → One revision → Human approval', language=None)
+    st.code('Discovery → Human confirms competitors → Research\n    → Client discovery checkpoint → Strategy draft → Benchmarks\n    → Strategy review → One revision → Human approval', language=None)
+    st.caption('Live runs pause for discovery. Incomplete discovery produces questions and skips campaign, benchmark and revision calls. The default recorded replay uses its curated scenario; its optional checkpoint demonstrates both decisions.')
     records = result.get('usage', [])
     totals = summarize(records)
     if result['mode']=='recorded':
@@ -52,6 +53,9 @@ def activity_panel(result):
 def review_panel(result):
     st.subheader('Review & revision')
     count = result.get('revision_count',0)
+    if result.get('decision') == 'discovery needed':
+        st.info('Campaign review and revision were deferred because discovery is incomplete. No campaign recommendations were generated.')
+        return
     st.caption(f'{count} accepted revision cycle · maximum one · automated review does not replace strategist approval.')
     for finding in result.get('review_findings',[]):
         st.write('• '+markdown_text(finding))

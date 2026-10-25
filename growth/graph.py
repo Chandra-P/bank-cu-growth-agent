@@ -13,9 +13,13 @@ from langgraph.types import interrupt
 from .evidence import confirm_competitors, ground_fact, normalized
 from .models import Institution, Source, Profile, Fact, FACT_FIELDS, ResearchRequest, Analysis
 from .providers import bounded_call, ProviderError
+from .discovery import discovery_questions
+from .models import ClientDiscovery
 
 
 class RunState(TypedDict, total=False):
+    decision: str
+    discovery_questions: list[str]
     request: dict
     run_id: str
     mode: str
@@ -126,10 +130,27 @@ def build_graph(search, analyst):
         return {"current_profile":profile.model_dump(), "round":state["round"]+1, "trace":trace, "warnings":warnings}
 
     def save_profile(state):
-        return {"profiles":[*state["profiles"], state["current_profile"]], "index":state["index"]+1, "round":0, "active_sources":[], "current_profile":{}}
+        return {"profiles":[*state["profiles"], state["current_profile"]], "index":state["index"]+1, "round":0, "active_sources":[], "current_profile":{}, 'status':'awaiting discovery' if state['index']==3 else 'researching'}
+
+    def discovery_checkpoint(state):
+        # The recorded replay keeps its curated legacy scenario. Explicitly
+        # supplied discovery (including {}) always exercises the real gate.
+        if state['mode']=='recorded' and state['request'].get('client_discovery') is None:
+            return {'decision':'recorded scenario', 'discovery_questions':[]}
+        answer = interrupt({'stage':'discovery', 'message':'Confirm the client goal, observed problem and success definition before campaign planning.'})
+        brief = ClientDiscovery(**answer)
+        request = {**state['request'], 'client_discovery':brief.model_dump()}
+        questions = discovery_questions(brief.model_dump())
+        trace = [*state['trace'], {'agent':'Strategy', 'action':'strategy:discovery-checkpoint', 'outcome':'discovery needed' if questions else 'campaign planning ready'}]
+        return {'request':request, 'decision':'discovery needed' if questions else 'campaign planning ready', 'discovery_questions':questions, 'trace':trace,
+                'hypotheses':[], 'strategist_takeaway':None, 'review_findings':[], 'revision_instructions':'', 'revision_count':0, 'draft_hypotheses':[], 'draft_takeaway':None,
+                'approved':False, 'approval':{}, 'benchmarks':{}, 'status':'analyzing'}
 
     def analyze(state):
         trace, warnings = list(state["trace"]), list(state["warnings"])
+        if state.get('decision') == 'discovery needed':
+            trace.append({'agent':'Strategy', 'action':'strategy:readiness', 'outcome':'Campaign generation withheld; discovery questions prepared locally; no model call'})
+            return {'hypotheses':[], 'strategist_takeaway':None, 'trace':trace, 'warnings':warnings, 'status':'awaiting review', 'benchmarks':{'benchmarks':[], 'limitations':'Benchmark research deferred until client discovery is complete; no CPA or budget inferred.'}}
         supported_ids = {f["source_id"] for p in state["profiles"] for f in p["facts"].values() if f["status"] == "Source-supported"}
         hypotheses, takeaway = [], None
         if supported_ids:
@@ -228,15 +249,16 @@ def build_graph(search, analyst):
         return call
 
     builder = StateGraph(RunState)
-    for name, fn in [("discover",discover), ("confirm",confirm), ("collect",collect), ("extract",extract), ("save_profile",save_profile), ("analyze",analyze), ('benchmarks',benchmarks), ('critique',critique), ('revise',revise), ("review",review)]:
+    for name, fn in [("discover",discover), ("confirm",confirm), ("collect",collect), ("extract",extract), ("save_profile",save_profile), ('discovery_checkpoint',discovery_checkpoint), ("analyze",analyze), ('benchmarks',benchmarks), ('critique',critique), ('revise',revise), ("review",review)]:
         builder.add_node(name, tracked(fn))
     builder.add_edge(START,"discover")
     builder.add_edge("discover","confirm")
     builder.add_edge("confirm","collect")
     builder.add_edge("collect","extract")
     builder.add_conditional_edges("extract",lambda s:"collect" if s["round"] < 2 and s["current_profile"].get("follow_up") else "save_profile",["collect","save_profile"])
-    builder.add_conditional_edges("save_profile",lambda s:"collect" if s["index"] < 4 else "analyze",["collect","analyze"])
-    builder.add_edge('analyze','benchmarks')
+    builder.add_conditional_edges("save_profile",lambda s:"collect" if s["index"] < 4 else "discovery_checkpoint",["collect","discovery_checkpoint"])
+    builder.add_edge('discovery_checkpoint','analyze')
+    builder.add_conditional_edges('analyze',lambda s:'review' if s.get('decision')=='discovery needed' else 'benchmarks',['review','benchmarks'])
     builder.add_edge('benchmarks','critique')
     builder.add_edge('critique','revise')
     builder.add_edge('revise','review')
