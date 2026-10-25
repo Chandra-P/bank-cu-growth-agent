@@ -6,6 +6,25 @@ from streamlit.testing.v1 import AppTest
 
 
 class AppTests(unittest.TestCase):
+    def test_live_cache_write_costs_render_complete_total(self):
+        from growth.usage import event,price_tokens
+        app=self.open()
+        app.button(key='start_research').click().run()
+        app.button(key='confirm_competitors').click().run()
+        result=dict(app.session_state['result'])
+        record=event('OpenAI','gpt-6-luna')
+        record.update(agent='Strategy',outcome='ok')
+        price_tokens(record,{'input_tokens':1683,'output_tokens':203,'total_tokens':1886,'input_token_details':{'cache_read':0,'cache_creation':1680},'output_token_details':{'reasoning':189}},{'service_tier':'default'})
+        result.update(mode='live',usage=[record])
+        app.session_state['result']=result
+        app.run()
+        self.assertFalse(app.exception)
+        metrics={m.label:m.value for m in app.metric}
+        self.assertEqual(metrics['Estimated AI cost'],'$0.000312')
+        self.assertEqual(metrics['Cache-write tokens'],'1,680')
+        self.assertFalse(any('unknown cost' in w.value for w in app.warning))
+        self.assertTrue(app.button(key='approve_report').disabled)
+
     def open(self):
         return AppTest.from_file(str(Path(__file__).resolve().parents[1] / "app.py"), default_timeout=30).run()
 

@@ -7,6 +7,7 @@ from .usage import summarize, PRICE_SOURCE, PRICE_DATE
 def activity_panel(result):
     st.subheader('Agent activity & AI costs')
     st.caption('Four logical agents coordinated by LangGraph. Strategy performs the review and one revision; it is not a fifth agent.')
+    st.caption('Live cost estimates include ordinary input, cache reads, cache writes and output. Cache writes are part of input cost and are counted once.')
     st.code('Discovery → Human confirms → Research → Strategy draft\n    → Benchmarks → Strategy review → One revision → Human approval', language=None)
     records = result.get('usage', [])
     totals = summarize(records)
@@ -25,7 +26,12 @@ def activity_panel(result):
             st.metric(cost_label, f"${totals['total_cost_usd']:.6f}", border=True)
         if totals['unpriced_calls'] or totals['unknown_usage']:
             st.warning(f"{totals['unknown_usage']} model attempts have unknown token usage; {totals['unpriced_calls']} have unknown cost. Recorded totals are partial, not a complete bill.")
-        st.caption('Cached input is priced separately within input tokens. Reasoning tokens are already included in output tokens. Retries and malformed model responses are included when the provider returns usage.')
+        st.caption('Input cost includes ordinary input, cache reads and cache writes. Cache-write costs are included once, not added again to input. Reasoning is included in output. Retries are included when usage is returned.')
+        with st.container(horizontal=True, wrap=True):
+            st.metric('Cache-read tokens', f"{totals['cached_input_tokens']:,}", border=True)
+            st.metric('Cache-write tokens', f"{totals['cache_write_tokens']:,}", border=True)
+            st.metric('Cache-write cost within input', f"${totals['cache_write_cost_usd']:.6f}", border=True)
+        st.caption('Cache writes included in complete estimates. Default implicit lifetime: 30 minutes; provider lifetime breakdown takes precedence. Missing counts, unsupported tiers or inconsistent details stay unpriced. Older runs require a new analysis to collect write counts.')
         st.markdown(f'[Model pricing source]({PRICE_SOURCE}) · Snapshot {PRICE_DATE} · Standard text USD; unknown models or unsupported billing tiers remain unpriced.')
         search = [r for r in records if r['provider']=='Tavily']
         credits = sum(r.get('search_credits',0) for r in search)

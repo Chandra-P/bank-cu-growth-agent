@@ -96,7 +96,7 @@ class ObservabilityTests(unittest.TestCase):
             ready: bool
         analyst = LiveAnalyst('test-key', 'gpt-6-luna')
         analyst.model = Mock()
-        analyst.model.invoke.return_value = SimpleNamespace(content='invalid json', usage_metadata={'input_tokens':100, 'output_tokens':20, 'total_tokens':120, 'input_token_details':{'cache_read':40}, 'output_token_details':{'reasoning':5}}, response_metadata={'model_name':'gpt-6-luna'})
+        analyst.model.invoke.return_value = SimpleNamespace(content='invalid json', usage_metadata={'input_tokens':100, 'output_tokens':20, 'total_tokens':120, 'input_token_details':{'cache_read':40,'cache_creation':0}, 'output_token_details':{'reasoning':5}}, response_metadata={'model_name':'gpt-6-luna'})
         with self.assertRaises(ProviderError):
             bounded_call(lambda: analyst._json(Result, 'test', {}), 'analysis:agent', [], delay=0)
         self.assertEqual(len(analyst.events), 2)

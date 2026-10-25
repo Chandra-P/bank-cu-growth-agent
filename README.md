@@ -100,3 +100,10 @@ Provider calls are orchestrated Python calls. Models return structured decisions
 OpenAI response usage is captured before JSON parsing, including responses requiring retries. Records include role, action, attempt, model, timing, input/output/total tokens, cache reads and reasoning tokens when available, plus separate input/output cost estimates. Cached tokens are a subset of input and reasoning tokens a subset of output. Missing provider usage and unmatched pricing remain unknown, with partial totals explicitly identified. Model pricing is a dated standard-text snapshot linked to the official source; unsupported billing tiers are unpriced. Tavily basic-search credits are separate; failed/uncertain charges remain unknown and actual dollar charges depend on the visitor plan. Provider bills remain authoritative.
 
 No prompts, raw provider error bodies or keys are included in activity events. Structured outputs and client context are retained in the session and approved exports as described above. No LangSmith tracing is enabled and no extra monitoring credential is required.
+
+
+## Cache-write accounting correction
+
+Cache writes are now retained and priced as part of input, without double counting. The activity panel includes write tokens and write-cost components. Default 30m implicit writes and provider-reported mixed lifetime breakdowns are supported. Missing counts or unsupported pricing remain explicit unknowns. Historical incomplete runs must be rerun; no counts were invented. See [cache-cost accounting](docs/cache-costs.md) for formulas, assumptions and live verification.
+
+Full suite: 49 tests passed in 13.875 seconds. Live probe: 1,683 input tokens, 1,680 cache writes and 203 output tokens; complete estimate $0.0003118. Independent review found no important issues. Existing submission branch and public app are updated as explicitly requested.

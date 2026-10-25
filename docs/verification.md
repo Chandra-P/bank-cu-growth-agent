@@ -74,3 +74,10 @@ Independent code review found two important defects. Both were reproduced by fai
 Ruling: use the existing submission checkout and public app as authorized. Known model pricing only, dated official standard text snapshot; other models/unsupported tiers remain unpriced. The campaign-budget calculator and internal rate cards remain subsequent increments; this release delivers benchmark evidence and AI operating-cost tracking. No minor review findings were deferred.
 
 Public deployment verified from functional commit `e40967a`: Streamlit initially hot-reloaded the new UI while retaining old imported workflow modules. Rebooted the existing public app, then started a fresh key-free recorded run, confirmed competitors and observed four-agent completion, one accepted revision, structured review findings and the activity panel's zero external API calls/$0 replay cost. Final approval remained unchecked and downloads locked. No hosted keys or secrets were added. Architecture notes and the credential-free submission ZIP were synchronized after verification.
+
+
+## Cache-write accounting correction
+
+Cache writes are now retained and priced as part of input, without double counting. The activity panel includes write tokens and write-cost components. Default 30m implicit writes and provider-reported mixed lifetime breakdowns are supported. Missing counts or unsupported pricing remain explicit unknowns. Historical incomplete runs must be rerun; no counts were invented. See [cache-cost accounting](docs/cache-costs.md) for formulas, assumptions and live verification.
+
+Full suite: 49 tests passed in 13.875 seconds. Live probe: 1,683 input tokens, 1,680 cache writes and 203 output tokens; complete estimate $0.0003118. Independent review found no important issues. Existing submission branch and public app are updated as explicitly requested.
