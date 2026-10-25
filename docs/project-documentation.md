@@ -47,7 +47,7 @@ The graph stores request, candidates, confirmed competitors, source register, ex
 
 Read-only research proceeds autonomously after competitor confirmation. One native interrupt pauses before research; another pauses before export. Rejection ends the run without downloads. The app does not send emails, publish campaigns, change product terms or write to a CRM. Internal ephemeral checkpoints are automatic; exporting a shareable report requires approval.
 
-At most two search rounds per institution, five returned sources per search and two attempts per remote operation. For a complete run that is at most nine logical searches and ten logical model operations, each with one retry. Timeouts are configured per provider call. Total duration depends on provider latency; no measured live runtime is claimed yet.
+At most two search rounds per institution, five returned sources per search and two attempts per remote operation. For a complete run that is at most ten logical searches and thirteen logical model operations, each with one retry. Timeouts are configured per provider call. Total duration depends on provider latency; no measured live runtime is claimed yet.
 
 ## Evidence and error handling
 
@@ -92,3 +92,8 @@ Search snippets can omit conditions, contain stale terms or mix products. Quote 
 - Live provider verification: OpenAI and Tavily authenticated; a preliminary live run completed and prompted stricter source checks. See docs/verification.md for final QA results.
 
 The handout's provided solution documents were not consulted during this implementation. The user should review the app and narrative, add their own live-run observations, and ensure the recording accurately represents which mode is demonstrated.
+
+
+### Four-agent release update
+
+Current workflow: Discovery → human competitor confirmation → Research → Strategy draft → Benchmarks → Strategy critique → one revision → human approval/export. Only checking and direct mail/display/paid social are supported. The original architecture above records the initial baseline; README and docs/verification.md describe the current release. Activity/cost tracking uses provider response metadata, not fabricated token counts. Costs are separate input/output estimates with dated model pricing, cache-read handling and explicit unknowns. Search credits are tracked separately. No LangSmith service is enabled. Campaign-budget calculation and internal benchmarks/rate cards are future increments.

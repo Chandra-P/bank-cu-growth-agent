@@ -13,3 +13,5 @@ Implementation sequence:
 Ruling: reuse existing dedicated submission checkout and preserve earlier unpublished strategist-brief work. User explicitly authorized implementation and public update; no additional deployment approval needed.
 Ruling: only exact known model pricing receives an automatic estimate; other models show unknown. Standard text pricing snapshot is dated and linked; unsupported billing tiers remain unpriced.
 Review focus: retries and parsing failures must retain billed usage; no double-counted cache/reasoning tokens; rejected revisions cannot introduce unsupported source IDs; BYOK isolation/export approval and recorded-mode truthfulness must remain intact.
+
+Completed: 41 tests passed; independent review findings reproduced and fixed (unknown cache details, CPL relabeling); public functional release e40967a verified after restarting cached Python modules. Public replay reached final review with one accepted revision and zero external calls. User-facing preview and credential-free ZIP saved under outputs. No paid live run claimed. Existing checkout retained.
