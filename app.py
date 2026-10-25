@@ -11,7 +11,7 @@ from growth.evidence import confirm_competitors, reviewed_competitor
 from growth.graph import build_graph, new_state
 from growth.models import Institution, ResearchRequest, FACT_FIELDS
 from growth.providers import TavilySearch, LiveAnalyst
-from growth.report import export_bundle, markdown_text
+from growth.report import export_bundle, markdown_text, evidence_fields, comparison_fields
 from growth.panels import activity_panel, review_panel, benchmark_panel
 from growth.website import resolve_website
 from growth.dashboard import overview_banner, card_surfaces
@@ -321,7 +321,8 @@ with brief:
     with st.container(border=True,key="comparison_card"):
         st.badge("MARKET SNAPSHOT",icon=":material/compare_arrows:",color="blue")
         st.subheader("How the checking offers compare")
-        rows = [{"Field":label, **{p["institution"]["name"]:p["facts"][key]["value"] for p in profiles}} for key,label in FACT_FIELDS.items()]
+        rows = [{"Field":label, **{p["institution"]["name"]:p["facts"][key]["value"] for p in profiles}} for key,label in comparison_fields(profiles)]
+        st.caption('Rows with the most source-supported claims appear first.')
         st.dataframe(rows,hide_index=True,height=365,alt="Checking product comparison for the home institution and three confirmed competitors")
         st.caption("Not verified = insufficient evidence. It does not mean zero fees, no requirement, or no available offer.")
     st.subheader("Campaign concepts for the client discussion")
@@ -354,11 +355,12 @@ with brief:
 
 with evidence:
     st.subheader("Follow each finding to its source")
+    st.caption('Source-supported claims appear first in each institution; unverified claims follow.')
     st.caption("The checks enforce source identity, an exact excerpt match, and numeric consistency. They do not establish semantic correctness or completeness; human review remains necessary.")
     sources = {s["id"]:s for s in result["sources"]}
     for profile in profiles:
         with st.expander(profile["institution"]["name"],expanded=False):
-            for key,label in FACT_FIELDS.items():
+            for key,label in evidence_fields(profile):
                 fact = profile["facts"][key]
                 st.markdown(f"**{label}:** {markdown_text(fact['value'])}")
                 if fact["status"] == "Source-supported":

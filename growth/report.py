@@ -4,6 +4,16 @@ import re
 from .models import FACT_FIELDS
 
 
+def evidence_fields(profile):
+    """Stable display order: supported claims first, remaining gaps below."""
+    return sorted(FACT_FIELDS.items(), key=lambda item: profile['facts'][item[0]]['status'] != 'Source-supported')
+
+
+def comparison_fields(profiles):
+    """Keep columns aligned while showing the most-supported rows first."""
+    return sorted(FACT_FIELDS.items(), key=lambda item: -sum(p['facts'][item[0]]['status'] == 'Source-supported' for p in profiles))
+
+
 def markdown_text(text):
     """Keep financial dollar amounts literal in Markdown math renderers."""
     return str(text).replace("$", "\\$")
@@ -25,7 +35,7 @@ def render_brief(state):
         lines += ['', '## Strategist takeaway', markdown_text(takeaway['finding']), '**Implication:** '+markdown_text(takeaway['implication']), '**Client validation question:** '+markdown_text(takeaway['client_question']), '**Evidence:** '+', '.join(takeaway['source_ids'])]
     lines.append("| Field | " + " | ".join(cell(p["institution"]["name"]) for p in profiles) + " |")
     lines.append("| --- | " + " | ".join("---" for _ in profiles) + " |")
-    for key,label in FACT_FIELDS.items():
+    for key,label in comparison_fields(profiles):
         values = []
         for profile in profiles:
             fact = profile["facts"][key]
