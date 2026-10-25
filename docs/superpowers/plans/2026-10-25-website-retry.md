@@ -1,0 +1,7 @@
+# Abbreviated FI names and recoverable website lookup
+
+User asked that united heritage cu reliably suggest uhcu.org and provide clear retry. Root observations: abbreviation remained an exact quoted search phrase; exhausted primary API operations aborted before alternative search; failure warning disappeared on rerun; model could accept a technical hosting copy as the official FI domain.
+
+Normalize standalone CU/FCU to Credit Union/Federal Credit Union for search and model context, preserving entered text. No pinned UHCU domain or unverified cache. Use one bounded alternative query after provider/grounding failure. Search excludes technical hosting and common directory/social domains, and deterministic acceptance rejects those domains even if search returns them. Still require on-domain source and exact identity quote, followed by human confirmation. Every attempt is retained in usage/trace. Persistent failure state changes the primary button to Retry website lookup and retains manual fallback. Changing client resets failure and confirmation; retries never auto-confirm.
+
+Tests cover abbreviation expansion, provider-failure recovery, rejected hosting copy with official-domain recovery, persistent retry UI, retry success and unchecked confirmation. Run suite and live no-market/Austin checks, independent review, local browser verification, public update and artifact refresh. Existing dedicated checkout retained. Existing saved keys remain local-only; public app.py remains BYOK.

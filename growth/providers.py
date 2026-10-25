@@ -51,20 +51,22 @@ class TavilySearch:
         self.client = client or httpx.Client(timeout=20)
         self.events = []
 
-    def search(self, query: str, domain: str | None = None) -> list[Source]:
+    def search(self, query: str, domain: str | None = None, *, exclude_domains: list[str] | None = None) -> list[Source]:
         record, start = event('Tavily'), time.perf_counter()
         self.events.append(record)
         try:
-            result = self._search(query, domain, record)
+            result = self._search(query, domain, record, exclude_domains)
             record['outcome'] = 'ok'
             return result
         finally:
             finish(record, start)
 
-    def _search(self, query, domain, record):
+    def _search(self, query, domain, record, exclude_domains=None):
         payload = {"query": query[:500], "search_depth": "basic", "max_results": 5, "include_answer": False, "include_raw_content": "text"}
         if domain:
             payload["include_domains"] = [domain]
+        if exclude_domains:
+            payload['exclude_domains'] = list(exclude_domains)
         response = self.client.post("https://api.tavily.com/search", headers={"Authorization": f"Bearer {self.api_key}"}, json=payload)
         response.raise_for_status()
         record.update(search_credits=1, search_credit_basis='Basic search: 1 credit; HTTP success', pricing_source='https://docs.tavily.com/documentation/api-credits', pricing_date='2026-10-24')

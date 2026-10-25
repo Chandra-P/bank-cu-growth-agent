@@ -6,6 +6,62 @@ from growth.models import Institution, Source
 
 
 class ClientSelectionTests(unittest.TestCase):
+    def test_technical_host_is_not_accepted_as_official_fi_domain(self):
+        from growth.models import WebsiteSuggestion
+        from growth.website import resolve_website
+        staging=Source(id='staging',title='United Heritage Credit Union',url='https://uhcu-web.azurewebsites.net/',excerpt='United Heritage Credit Union',retrieved_at='2026-10-24')
+        official=Source(id='official',title='United Heritage Credit Union',url='https://www.uhcu.org/',excerpt='United Heritage Credit Union',retrieved_at='2026-10-24')
+        search,analyst=Mock(),Mock()
+        search.search.side_effect=[[staging],[official]]
+        analyst.resolve_website.side_effect=[WebsiteSuggestion(institution=Institution(name='United Heritage Credit Union',domain='uhcu-web.azurewebsites.net'),source_id='staging',quote='United Heritage Credit Union'),WebsiteSuggestion(institution=Institution(name='United Heritage Credit Union',domain='uhcu.org'),source_id='official',quote='United Heritage Credit Union')]
+        result=resolve_website(search,analyst,'united heritage cu','',[])
+        self.assertEqual(result['institution']['domain'],'uhcu.org')
+        self.assertIn('azurewebsites.net',search.search.call_args.kwargs['exclude_domains'])
+    def test_short_credit_union_name_is_expanded_for_search_and_model(self):
+        from growth.models import WebsiteSuggestion
+        from growth.website import resolve_website
+        official=Source(id='uhcu',title='United Heritage Credit Union',url='https://www.uhcu.org/',excerpt='United Heritage Credit Union offers banking services in Austin.',retrieved_at='2026-10-24')
+        search,analyst=Mock(),Mock()
+        search.search.return_value=[official]
+        analyst.resolve_website.return_value=WebsiteSuggestion(institution=Institution(name='United Heritage Credit Union',domain='uhcu.org'),source_id='uhcu',quote='United Heritage Credit Union')
+        result=resolve_website(search,analyst,'  united heritage cu  ','',[])
+        self.assertEqual(result['institution']['domain'],'uhcu.org')
+        self.assertIn('"united heritage credit union"',search.search.call_args.args[0].casefold())
+        self.assertEqual(analyst.resolve_website.call_args.args[0].casefold(),'united heritage credit union')
+
+    def test_exhausted_primary_search_recovers_with_bounded_alternative(self):
+        from growth.models import WebsiteSuggestion
+        from growth.website import resolve_website
+        source=Source(id='uhcu',title='United Heritage Credit Union',url='https://uhcu.org/',excerpt='United Heritage Credit Union',retrieved_at='2026-10-24')
+        search,analyst=Mock(),Mock()
+        search.search.side_effect=[TimeoutError('private detail'),TimeoutError('private detail'),[source]]
+        analyst.resolve_website.return_value=WebsiteSuggestion(institution=Institution(name='United Heritage Credit Union',domain='uhcu.org'),source_id='uhcu',quote='United Heritage Credit Union')
+        trace=[]
+        result=resolve_website(search,analyst,'united heritage cu','Austin',trace)
+        self.assertEqual(result['institution']['domain'],'uhcu.org')
+        self.assertEqual(search.search.call_count,3)
+        self.assertNotIn('private detail',str(trace))
+
+    def test_failed_lookup_persists_retry_then_success_populates_domain(self):
+        app=AppTest.from_file(str(Path(__file__).resolve().parents[1]/'app.py'),default_timeout=30).run()
+        app.selectbox(key='mode').select('Live research').run()
+        app.text_input(key='visitor_openai_key').set_value('test-openai').run()
+        app.text_input(key='visitor_tavily_key').set_value('test-tavily').run()
+        app.text_input(key='client_name').set_value('united heritage cu').run()
+        with patch('growth.website.resolve_website',side_effect=ValueError('private diagnostic')):
+            app.button(key='find_website').click().run()
+        self.assertFalse(app.exception)
+        self.assertEqual(app.button(key='find_website').label,'Retry website lookup')
+        app.run()
+        self.assertEqual(app.button(key='find_website').label,'Retry website lookup')
+        self.assertTrue(any('Retry website lookup' in w.value for w in app.warning))
+        self.assertNotIn('private diagnostic',str([w.value for w in app.warning]))
+        with patch('growth.website.resolve_website',return_value={'institution':Institution(name='United Heritage Credit Union',domain='uhcu.org').model_dump(),'source':{'url':'https://www.uhcu.org/'},'quote':'United Heritage Credit Union'}):
+            app.button(key='find_website').click().run()
+        self.assertEqual(app.text_input(key='home_domain').value,'uhcu.org')
+        self.assertEqual(app.button(key='find_website').label,'Find official website')
+        self.assertFalse(app.checkbox(key='website_confirmed').value)
+
     def test_switching_to_live_discards_demo_report_and_approval(self):
         app=AppTest.from_file(str(Path(__file__).resolve().parents[1]/'app.py'),default_timeout=30).run()
         app.button(key='start_research').click().run()

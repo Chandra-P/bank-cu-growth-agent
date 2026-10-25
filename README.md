@@ -125,3 +125,12 @@ Run `./run.ps1` to start `local_app.py` on http://127.0.0.1:8501. This separate 
 Equivalent command: `python -m streamlit run local_app.py --server.address=127.0.0.1 --server.headless=true`.
 
 Public/Cloud/Docker deployment must continue to use **app.py**. It cannot read the local settings file and requires each visitor's own keys. Do not deploy local_app.py or upload .env. Existing ignore rules and Docker exclusions keep credentials out of Git and packages. Public deployment was not modified for the local-launcher change.
+
+
+## Abbreviated website lookup and retry — October 25, 2026
+
+Lookup expands standalone CU and FCU for search/model context while retaining user input. Both search and deterministic acceptance exclude common technical-hosting, directory and social domains. This prevents an on-domain identity quote from a hosting copy being accepted as the FI's official public domain. Unknown/provider-failure primary results receive one bounded alternative query; retry remains an explicit user action after exhaustion. No FI-domain mapping is hardcoded.
+
+Failure state now persists across reruns and changes the primary action to Retry website lookup, with manual-domain fallback explained. Every retry clears stale suggestion/domain/confirmation, retains paid attempts in the run ledger, and still requires user confirmation. A wrong proposed domain can still constrain the bounded follow-up; retry and manual correction remain available. Network/provider success cannot be guaranteed.
+
+Validation: 61 tests passed in 21.513 seconds, including abbreviation search, provider recovery, technical-host rejection, persistent retry UI and successful retry without auto-confirmation. A real short-name/no-market test returned uhcu.org with one search and one model operation (estimated model cost $0.00031355). Independent review found no important defects. Public app remains BYOK; local saved-key behavior is unchanged.

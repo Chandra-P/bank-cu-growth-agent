@@ -47,7 +47,7 @@ def unconfirm_website():
 def clear_website():
     reset_research()
     st.session_state['client_brief'] = ''
-    for key in ('website_suggestion','website_usage','website_trace'):
+    for key in ('website_suggestion','website_usage','website_trace','website_lookup_failed'):
         st.session_state.pop(key,None)
     st.session_state['home_domain'] = ''
     unconfirm_website()
@@ -146,7 +146,9 @@ with st.container(border=True,key='client_setup'):
     else:
         if not ready:
             st.info('Connect your OpenAI and Tavily keys in the sidebar to find a website and run live research.')
-        if st.button('Find official website',key='find_website',disabled=active or not ready or len(name.strip())<2):
+        failed_lookup = st.session_state.get('website_lookup_failed',False)
+        if st.button('Retry website lookup' if failed_lookup else 'Find official website',key='find_website',disabled=active or not ready or len(name.strip())<2):
+            st.session_state['website_lookup_failed'] = False
             st.session_state['website_confirmed'] = False
             st.session_state['website_suggestion'] = None
             st.session_state['home_domain'] = ''
@@ -158,10 +160,14 @@ with st.container(border=True,key='client_setup'):
                 st.session_state['website_suggestion'] = suggestion
                 st.session_state['home_domain'] = suggestion['institution']['domain']
             except Exception:
-                st.warning('A supported website suggestion was unavailable. Enter the official domain manually and confirm it below.')
+                st.session_state['website_lookup_failed'] = True
             finally:
                 st.session_state.setdefault('website_usage',[]).extend([dict(e) for provider in (search,analyst) for e in provider.events])
                 st.session_state.setdefault('website_trace',[]).extend(trace)
+            # Refresh the retry label as well as the persistent error message.
+            st.rerun()
+        if st.session_state.get('website_lookup_failed',False):
+            st.warning('Website lookup did not complete. Click Retry website lookup to try again. You can also enter the official domain manually and confirm it below.')
         suggestion = st.session_state.get('website_suggestion')
         if suggestion:
             st.write('Suggested institution: '+suggestion['institution']['name'])

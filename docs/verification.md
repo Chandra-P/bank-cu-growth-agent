@@ -95,3 +95,12 @@ Validation: 54 tests passed in 17.231 seconds, including main-area selection, de
 ## Local saved-key isolation
 
 Added a separate loopback-only local_app.py and updated run.ps1. Public app.py never reads .env; saved settings are injected only by the guarded local launcher. Saved keys do not populate password widgets. Clear keys & session disables automatic fallback until explicitly restored. Independent security review found no important defects. The full suite passed 57 tests, covering local key readiness, clear behavior, non-loopback rejection before loading, public no-loader behavior and prior BYOK/session/export controls. The local server remains running for the user's United Heritage Credit Union test; the public deployment is untouched.
+
+
+## Abbreviated website lookup and retry — October 25, 2026
+
+Lookup expands standalone CU and FCU for search/model context while retaining user input. Both search and deterministic acceptance exclude common technical-hosting, directory and social domains. This prevents an on-domain identity quote from a hosting copy being accepted as the FI's official public domain. Unknown/provider-failure primary results receive one bounded alternative query; retry remains an explicit user action after exhaustion. No FI-domain mapping is hardcoded.
+
+Failure state now persists across reruns and changes the primary action to Retry website lookup, with manual-domain fallback explained. Every retry clears stale suggestion/domain/confirmation, retains paid attempts in the run ledger, and still requires user confirmation. A wrong proposed domain can still constrain the bounded follow-up; retry and manual correction remain available. Network/provider success cannot be guaranteed.
+
+Validation: 61 tests passed in 21.513 seconds, including abbreviation search, provider recovery, technical-host rejection, persistent retry UI and successful retry without auto-confirmation. A real short-name/no-market test returned uhcu.org with one search and one model operation (estimated model cost $0.00031355). Independent review found no important defects. Public app remains BYOK; local saved-key behavior is unchanged.
