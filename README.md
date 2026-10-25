@@ -28,7 +28,7 @@ Keys travel to the app server and remain in that visitor's session memory and pr
 
 For GPT-5/GPT-6 and o-series reasoning model names, the client omits explicit temperature settings to avoid unsupported sampling parameters.
 
-Choose **Live research** before starting, enter a home institution/domain/market, and discover candidates. Confirm or replace all three names and official domains. A failed discovery permits manual selection. Read-only search is autonomous after confirmation; downloads remain locked until final approval.
+Choose **Live research** at the top of the main workspace, enter the FI name and market, click **Find official website**, inspect/correct the suggestion, and explicitly confirm the FI and website before starting competitor discovery. Confirm or replace all three names and official domains. A failed discovery permits manual selection. Read-only search is autonomous after confirmation; downloads remain locked until final approval.
 
 Streamlit's built-in table CSV/clipboard export controls are disabled; use the approved briefing/evidence downloads. Approval is a workflow control, not a data-secrecy boundary: drafts are visible for review and can still be read or captured.
 
@@ -107,3 +107,12 @@ No prompts, raw provider error bodies or keys are included in activity events. S
 Cache writes are now retained and priced as part of input, without double counting. The activity panel includes write tokens and write-cost components. Default 30m implicit writes and provider-reported mixed lifetime breakdowns are supported. Missing counts or unsupported pricing remain explicit unknowns. Historical incomplete runs must be rerun; no counts were invented. See [cache-cost accounting](docs/cache-costs.md) for formulas, assumptions and live verification.
 
 Full suite: 49 tests passed in 13.875 seconds. Live probe: 1,683 input tokens, 1,680 cache writes and 203 output tokens; complete estimate $0.0003118. Independent review found no important issues. Existing submission branch and public app are updated as explicitly requested.
+
+
+## Client selection and website confirmation
+
+Research mode, client name, market, website lookup/confirmation, goals and start controls are now at the top of the main workspace. Keys/model/privacy remain in the sidebar. Switching modes or changing the live client/market discards the previous graph, demo/live report, approval, goals, website suggestion and confirmation. API keys stay until Clear keys & session. Mode selection and live name/market edits remain available while a report is open. No demo comparison or export survives switching to live.
+
+Live users enter an FI name and market, request a likely official website, inspect its on-domain source, correct the domain if needed, and confirm before research. Failure permits manual domain entry followed by the same explicit confirmation. Changing identity, market or domain invalidates confirmation. Discovery preflight uses one search/model pair plus at most one on-domain follow-up when initial results are directories or otherwise ungrounded. It is part of Discovery, not a fifth agent. API attempts and costs feed the research run ledger; repeated user-triggered lookups also count.
+
+Validation: 54 tests passed in 17.231 seconds, including main-area selection, demo-to-live reset, active-client edits, confirmation invalidation, manual readiness, domain/quote grounding, bounded directory recovery and existing approval/credential regressions. Independent review found no Important/Critical issues. Live lookup successfully returned a sourced Truliant website suggestion after two search/model pairs; user confirmation was not bypassed. No full live competitor run or report approval was needed for this revision.

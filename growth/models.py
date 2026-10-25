@@ -119,6 +119,12 @@ class Discovery(BaseModel):
     competitors: list[Institution] = Field(min_length=3, max_length=3)
 
 
+class WebsiteSuggestion(BaseModel):
+    institution: Institution
+    source_id: str
+    quote: str = Field(min_length=3, max_length=500)
+
+
 class Extraction(BaseModel):
     model_config = ConfigDict(extra="ignore")
     facts: dict[str, Fact]

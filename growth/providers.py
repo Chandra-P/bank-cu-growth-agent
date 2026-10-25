@@ -12,7 +12,7 @@ from langchain_core.messages import SystemMessage, HumanMessage
 from pydantic import BaseModel
 
 from .evidence import official_url
-from .models import Source, Discovery, Extraction, Analysis, BenchmarkResearch, RecommendationReview
+from .models import Source, Discovery, Extraction, Analysis, BenchmarkResearch, RecommendationReview, WebsiteSuggestion
 from .usage import operation as usage_operation, event, finish, price_tokens, role
 
 T = TypeVar("T")
@@ -141,6 +141,9 @@ class LiveAnalyst:
 
     def discover(self, request, sources):
         return self._json(Discovery, "Propose exactly three plausible competitors in the specified market with official domains and evidence-based reasons. These are candidates, not ranked top competitors; a human will confirm market relevance.", {"request":request, "sources":[s.model_dump() for s in sources]}).competitors
+
+    def resolve_website(self, name, market, sources):
+        return self._json(WebsiteSuggestion, 'Identify the likely official bank or credit union website for the entered FI name and market. Return its institution identity and root domain, a source_id whose URL is on that domain, and a short exact identity quote from its excerpt. Do not choose a directory, social profile, unrelated similarly named FI or an advertising link. A human must confirm identity and website before research.', {'fi_name':name,'market':market,'sources':[s.model_dump() for s in sources]})
 
     def extract(self, institution, sources):
         from .models import FACT_FIELDS

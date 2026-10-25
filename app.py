@@ -13,6 +13,7 @@ from growth.models import Institution, ResearchRequest, FACT_FIELDS
 from growth.providers import TavilySearch, LiveAnalyst
 from growth.report import export_bundle, markdown_text
 from growth.panels import activity_panel, review_panel, benchmark_panel
+from growth.website import resolve_website
 
 ROOT = Path(__file__).resolve().parent
 st.set_page_config(page_title="FI growth intelligence", page_icon=":material/account_balance:", layout="wide", initial_sidebar_state="auto")
@@ -31,9 +32,36 @@ def reset_research():
             del st.session_state[key]
 
 
+def unconfirm_website():
+    st.session_state['website_confirmed'] = False
+
+
+def clear_website():
+    reset_research()
+    st.session_state['client_brief'] = ''
+    for key in ('website_suggestion','website_usage','website_trace'):
+        st.session_state.pop(key,None)
+    st.session_state['home_domain'] = ''
+    unconfirm_website()
+
+
+def reset_client():
+    reset_research()
+    clear_website()
+    recorded = st.session_state.get('mode','Recorded evidence demo') == 'Recorded evidence demo'
+    default = demo_request()
+    st.session_state['client_name'] = default.home.name if recorded else ''
+    st.session_state['client_market'] = default.market if recorded else ''
+    st.session_state['client_brief'] = ''
+
+
+def change_mode():
+    reset_client()
+
+
 def clear_credentials():
     # The graph closes over provider clients, so discard it with the keys.
-    reset_research()
+    reset_client()
     st.session_state["visitor_openai_key"] = ""
     st.session_state["visitor_tavily_key"] = ""
 
@@ -56,68 +84,109 @@ def advance(payload):
         st.session_state.run_error = "The run could not finish this step. Check your local configuration and provider access, then start a new run. Provider details and credentials are not displayed."
 
 
-with st.sidebar:
-    st.badge("FI / GROWTH",icon=":material/account_balance:",color="blue")
-    st.markdown("## Know your market.\n## Choose your next move.")
-    st.caption("Competitive insight for banks and credit unions.")
-    st.divider()
-    st.caption("RESEARCH WORKSPACE")
-    active = st.session_state.result is not None
-    mode = st.selectbox("Research mode", ["Recorded evidence demo", "Live research"], disabled=active, key="mode")
-    recorded = mode == "Recorded evidence demo"
-    if recorded:
-        with st.expander("About the recorded demo",icon=":material/info:"):
-            st.caption("Official-page excerpts collected October 24, 2026. Curated extraction and hypotheses; no live search or model calls.")
-    st.caption("CONNECT YOUR KEYS")
-    openai_key = st.text_input("OpenAI API key", type="password", key="visitor_openai_key", disabled=active, max_chars=300)
-    tavily_key = st.text_input("Tavily API key", type="password", key="visitor_tavily_key", disabled=active, max_chars=300)
-    st.caption("Keys are sent to this app's server and held in your session memory for provider calls. Provider charges apply. They are not written to reports or saved to disk.")
-    st.button("Clear keys & session", key="clear_keys", on_click=clear_credentials, icon=":material/lock_reset:", width="stretch")
-    with st.expander("Model settings", icon=":material/settings:"):
-        model_name = st.text_input("OpenAI model", "gpt-6-luna", max_chars=100, disabled=active, key="visitor_model")
-        st.caption("Use a model available to your OpenAI API project. Keys are never loaded from the host environment.")
-    ready = bool(openai_key.strip() and tavily_key.strip() and model_name.strip())
-    if not recorded and not ready:
-        st.info("Enter both keys to start live research, or choose the recorded demo.")
-    default = demo_request()
-    with st.form("research_setup",border=False):
-        name = st.text_input("Home institution", default.home.name, disabled=recorded or active, max_chars=120)
-        domain = st.text_input("Official domain", default.home.domain, disabled=recorded or active)
-        market = st.text_input("Market", default.market, disabled=recorded or active, max_chars=160)
-        st.caption("Consumer checking · 3 competitors")
-        client_brief = st.text_area('Client goals or problem to solve', key='client_brief', max_chars=2000, disabled=active, placeholder='Annual goals, acquisition challenges and priorities from the client discussion. Business context only.')
-        with st.expander("Demo controls",icon=":material/tune:"):
-            outage = st.checkbox("Simulate a Skyla source outage", disabled=not recorded or active, key="demo_outage", help="Demonstrates one retry, then an explicit unknown instead of an invented answer.")
-        start = st.form_submit_button("Explore recorded demo" if recorded else "Start live research", type="primary", disabled=active or (not recorded and not ready), key="start_research", icon=":material/search:",width="stretch")
-    if start:
-        try:
-            request = default if recorded else ResearchRequest(home=Institution(name=name,domain=domain),market=market)
-            request = request.model_copy(update={'client_brief':client_brief.strip()})
-            if recorded:
-                search, analyst = DemoSearch(outage=outage), DemoAnalyst()
-            else:
-                if not ready:
-                    raise ValueError("Visitor credentials required")
-                search = TavilySearch(tavily_key.strip())
-                analyst = LiveAnalyst(openai_key.strip(),model_name.strip(),"https://api.openai.com/v1")
-            st.session_state.graph = build_graph(search,analyst)
-            st.session_state.config = {"configurable":{"thread_id":str(uuid4())},"recursion_limit":60}
-            advance(new_state(request,"recorded" if recorded else "live"))
-            st.rerun()
-        except (ValueError,ValidationError):
-            st.error("Check the institution, market and official domain. For live research, enter both API keys and a model in the research panel.")
-    if st.button("New research", disabled=not active, key="new_research", icon=":material/add:",width="stretch"):
-        reset_research()
-        st.rerun()
-    st.divider()
-    st.caption(":material/public: Public sources · Human-reviewed output")
-    with st.expander("Session & privacy",icon=":material/shield:"):
-        st.caption("Runs and provider clients are scoped to your Streamlit session, not shared with other visitors. Clear keys & session discards them. Disconnect cleanup depends on the host; closing a tab does not promise immediate erasure. Download approved results to keep a copy.")
-
 st.caption("FI / GROWTH     ·     WORKSPACE / COMPETITOR ANALYSIS")
 st.title("Your market, in focus.")
 st.markdown("Consumer checking intelligence for banks and credit unions.")
 st.caption('Four-agent workflow · Review & revision · Usage transparency')
+
+active = st.session_state.result is not None
+default = demo_request()
+with st.container(border=True):
+    st.subheader('Choose your client')
+    top = st.columns([3,1])
+    mode = top[0].selectbox('Research mode', ['Recorded evidence demo','Live research'], key='mode', on_change=change_mode)
+    top[1].button('New research', key='new_research', on_click=reset_client, disabled=not active, width='stretch')
+recorded = mode == 'Recorded evidence demo'
+
+with st.sidebar:
+    st.badge('FI / GROWTH',icon=':material/account_balance:',color='blue')
+    st.markdown('## Research connections')
+    st.caption('Choose the client and market at the top of the workspace.')
+    openai_key = st.text_input('OpenAI API key', type='password', key='visitor_openai_key', disabled=active, max_chars=300)
+    tavily_key = st.text_input('Tavily API key', type='password', key='visitor_tavily_key', disabled=active, max_chars=300)
+    st.caption("Keys are sent to this app's server and held in your session memory for provider calls. Provider charges apply. They are not written to reports or saved to disk.")
+    st.button('Clear keys & session',key='clear_keys',on_click=clear_credentials,width='stretch')
+    with st.expander('Model settings'):
+        model_name = st.text_input('OpenAI model','gpt-6-luna',key='visitor_model',max_chars=100,disabled=active)
+        st.caption('Keys are never loaded from the host environment.')
+    with st.expander('Session & privacy'):
+        st.caption('Runs and provider clients belong to your session. Switching mode or starting new research discards the prior report and approval; keys remain until Clear keys & session. Closing a tab does not guarantee immediate cleanup.')
+
+ready = bool(openai_key.strip() and tavily_key.strip() and model_name.strip())
+if recorded:
+    st.session_state.setdefault('client_name',default.home.name)
+    st.session_state.setdefault('client_market',default.market)
+    st.session_state['home_domain'] = default.home.domain
+with st.container(border=True,key='client_setup'):
+    columns = st.columns(2)
+    name = columns[0].text_input('Bank or credit union name',key='client_name',max_chars=120,disabled=recorded,on_change=clear_website,placeholder='Enter your client FI name')
+    market = columns[1].text_input('Market',key='client_market',max_chars=160,disabled=recorded,on_change=clear_website,placeholder='City, state or service area')
+    st.caption('Consumer checking · Direct mail, Display and Paid social')
+    if recorded:
+        st.info('Recorded demo uses Truliant in Charlotte. Select Live research above to choose another client.')
+    else:
+        if not ready:
+            st.info('Connect your OpenAI and Tavily keys in the sidebar to find a website and run live research.')
+        if st.button('Find official website',key='find_website',disabled=active or not ready or len(name.strip())<2):
+            st.session_state['website_confirmed'] = False
+            st.session_state['website_suggestion'] = None
+            st.session_state['home_domain'] = ''
+            search,analyst = TavilySearch(tavily_key.strip()),LiveAnalyst(openai_key.strip(),model_name.strip(),'https://api.openai.com/v1')
+            trace = []
+            try:
+                with st.spinner('Finding the likely official FI website…'):
+                    suggestion = resolve_website(search,analyst,name,market,trace)
+                st.session_state['website_suggestion'] = suggestion
+                st.session_state['home_domain'] = suggestion['institution']['domain']
+            except Exception:
+                st.warning('A supported website suggestion was unavailable. Enter the official domain manually and confirm it below.')
+            finally:
+                st.session_state.setdefault('website_usage',[]).extend([dict(e) for provider in (search,analyst) for e in provider.events])
+                st.session_state.setdefault('website_trace',[]).extend(trace)
+        suggestion = st.session_state.get('website_suggestion')
+        if suggestion:
+            st.write('Suggested institution: '+suggestion['institution']['name'])
+            st.link_button('Inspect suggested official source',suggestion['source']['url'])
+            st.caption('Source excerpt: '+suggestion['quote'])
+    domain = st.text_input('Official website domain',key='home_domain',disabled=recorded or active,on_change=unconfirm_website,placeholder='Populated after website search; correct it if needed')
+    valid_domain = False
+    if not recorded and domain.strip():
+        try:
+            Institution(name=name,domain=domain)
+            valid_domain = True
+        except ValueError:
+            st.warning('Enter a valid official public HTTPS domain.')
+    confirmed = recorded
+    if not recorded:
+        confirmed = st.checkbox('I confirm this is the correct client FI and official website.',key='website_confirmed',disabled=active or not valid_domain)
+    client_brief = st.text_area('Client goals or problem to solve',key='client_brief',max_chars=2000,disabled=active,placeholder='Annual goals, acquisition challenges and priorities. Business context only.')
+    outage = False
+    if recorded:
+        with st.expander('Demo controls'):
+            outage = st.checkbox('Simulate a Skyla source outage',key='demo_outage',disabled=active)
+    start = st.button('Explore recorded demo' if recorded else 'Start live research',key='start_research',type='primary',disabled=active or (not recorded and not (ready and valid_domain and confirmed and len(market.strip())>=2)))
+    if start:
+        try:
+            request = default if recorded else ResearchRequest(home=Institution(name=name,domain=domain,reason='Client identity and official domain confirmed by strategist'),market=market)
+            request = request.model_copy(update={'client_brief':client_brief.strip()})
+            if recorded:
+                search,analyst = DemoSearch(outage=outage),DemoAnalyst()
+            else:
+                if not (ready and valid_domain and confirmed):
+                    raise ValueError('Confirm client and website before research')
+                search,analyst = TavilySearch(tavily_key.strip()),LiveAnalyst(openai_key.strip(),model_name.strip(),'https://api.openai.com/v1')
+                for provider in (search,analyst):
+                    label = 'Tavily' if provider is search else 'OpenAI'
+                    provider.events.extend(dict(e) for e in st.session_state.get('website_usage',[]) if e['provider']==label)
+            st.session_state.graph = build_graph(search,analyst)
+            st.session_state.config = {'configurable':{'thread_id':str(uuid4())},'recursion_limit':60}
+            initial = new_state(request,'recorded' if recorded else 'live')
+            if not recorded:
+                initial['trace'] = list(st.session_state.get('website_trace',[])) + [{'agent':'Discovery','action':'discovery:website-confirmed','outcome':'human confirmed','domain':request.home.domain}]
+            advance(initial)
+            st.rerun()
+        except (ValueError,ValidationError):
+            st.error('Check the client name, confirmed website, market and visitor keys.')
 
 result = st.session_state.result
 if st.session_state.run_error:
@@ -127,7 +196,7 @@ if not result:
     st.space("small")
     with st.container(border=True,key="scope_card"):
         st.badge("YOUR DEMO MARKET" if recorded else "YOUR RESEARCH MARKET",icon=":material/location_on:",color="blue")
-        st.subheader("Truliant Federal Credit Union · Charlotte" if recorded else f"{name} · {market}")
+        st.subheader("Truliant Federal Credit Union · Charlotte" if recorded else f"{name or 'Client not selected'} · {market or 'Choose a market'}")
         st.write("One market. Three competitors. A checking-account brief your growth team can inspect and act on.")
         st.caption("Recorded evidence demo · No API keys needed · Human approval before export" if recorded else "Live public-source research · Bring your own API keys · Human approval before export")
     st.space("small")
@@ -148,7 +217,7 @@ if not result:
         st.badge('04 / BENCHMARKS',icon=':material/query_stats:',color='blue')
         st.subheader('Ground the economics')
         st.write('Research public CPA evidence, then inspect the strategy review and revision before approving.')
-    st.caption(":material/arrow_back: Explore the recorded demo or enter your own keys for live research in the research panel.")
+    st.caption(":material/arrow_back: Choose Live research and your client at the top, or explore the recorded demo. Connect live keys in the sidebar.")
     st.stop()
 
 with st.container(horizontal=True,gap="small"):
