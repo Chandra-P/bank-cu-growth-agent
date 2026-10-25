@@ -40,7 +40,7 @@ The local Streamlit server started at http://127.0.0.1:8501. Its health endpoint
 
 An OpenAI + Tavily live Charlotte run was completed on October 24, 2026 using `gpt-6-luna`: four identified products, 16/36 supported fields and three hypotheses, observed complete within about three minutes after competitor confirmation. Offers/news and several product conditions remained unverified. The run was left at final human review. This was a partial research result, not independent validation of all product terms.
 
-The public revision no longer loads saved credentials: each visitor must enter their own keys. GitHub CLI authentication remains expired and Streamlit Cloud is signed out, so no public deployment is claimed. Documentation remains local as requested.
+The public revision no longer loads saved credentials: each visitor must enter their own keys. GitHub access was subsequently renewed with explicit user approval and the app deployed publicly on October 24, 2026. Documentation was not published to Drive.
 
 ## Remaining acceptance checks
 
@@ -56,4 +56,8 @@ After the final redesign changes, the full suite passed again: **19 tests in 6.7
 
 Implemented selected Modern Fintech concept with native Streamlit theme/layout, Inter typography, cobalt actions, blue-gray background, navy sidebar and three opportunity cards. Regression tests first failed because visitor inputs did not exist, then passed after implementation. Full suite: **26 tests passed in 9.804 seconds**; no cleanup exception in that run. Tests cover no environment credential fallback, both-key readiness, isolated browser-session inputs, clearing graph/config/results with keys, recorded workflow, approval gates and provider grounding/retries. No additional paid live call was made for the visual/public revision.
 
-A code review found no blocking credential-isolation issues. A mode-aware landing copy issue was corrected. Browser QA exercised the key-free recorded workflow to final review with approval unchecked. Container deployment files are prepared; the Docker image has not been built in this environment. Account sign-in remains necessary before publication.
+A code review found no blocking credential-isolation issues. A mode-aware landing copy issue was corrected. Browser QA exercised the key-free recorded workflow to final review with approval unchecked. Container deployment files are prepared; the Docker image has not been built in this environment.
+
+## Public release verification — October 24, 2026
+
+URL: https://bank-cu-growth-intelligence.streamlit.app/ . GitHub source branch `submission` published from release commit `c71ec30`. Streamlit build logs confirm Python 3.12.15 and Streamlit 1.65.0. Sharing settings explicitly show **public and searchable**. Empty hosted API-key inputs disable live research; the hosted recorded demo reaches its confirmation and final review checkpoints. No API keys were entered as host secrets or into the hosted smoke test. Release test rerun: **26 tests passed in 38.602 seconds**. Submission ZIP integrity and exclusion of credential files and saved key values were checked before publication.

@@ -4,6 +4,8 @@ A focused Project A submission: compare a bank or credit union's checking produc
 
 **Demo institution:** Truliant Federal Credit Union. **Market:** Charlotte, North Carolina. **Product:** consumer checking accounts.
 
+**Public app:** https://bank-cu-growth-intelligence.streamlit.app/ · Recorded demo requires no keys; live research uses each visitor's OpenAI and Tavily keys.
+
 ## Run it
 
 Python 3.12 is the tested runtime. From this folder:

@@ -24,4 +24,6 @@ Keep provider usage limits and workflow bounds in place. The app searches public
 
 ## Current release status
 
-Prepared locally. Public publication still requires authenticated GitHub and hosting access; no public URL has been created by this revision.
+Deployed publicly on October 24, 2026: https://bank-cu-growth-intelligence.streamlit.app/
+
+Source: https://github.com/Chandra-P/bank-cu-growth-agent · branch `submission` · entry point `app.py` · Python 3.12. Streamlit sharing explicitly reports **public and searchable**. No host API secrets were entered. Hosted live mode was checked with empty inputs and correctly disabled research; the key-free recorded workflow reached final review. No additional paid live call was made during deployment.
