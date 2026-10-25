@@ -16,6 +16,14 @@ from growth.panels import activity_panel, review_panel, benchmark_panel
 from growth.website import resolve_website
 
 ROOT = Path(__file__).resolve().parent
+# Only local_app.py injects these settings. Public app.py never reads .env or
+# process environment credentials, regardless of where app.py is launched.
+LOCAL_SETTINGS = globals().get('_LOCAL_SETTINGS') or {}
+if LOCAL_SETTINGS:
+    st.session_state.setdefault('local_keys_enabled',True)
+    st.session_state.setdefault('mode','Live research')
+    st.session_state.setdefault('visitor_model',LOCAL_SETTINGS.get('model','gpt-6-luna'))
+st.session_state.setdefault('visitor_model','gpt-6-luna')
 st.set_page_config(page_title="FI growth intelligence", page_icon=":material/account_balance:", layout="wide", initial_sidebar_state="auto")
 # Tables otherwise expose an independent CSV/clipboard path before review.
 st.set_option("client.disableDataExport", True)
@@ -64,6 +72,8 @@ def clear_credentials():
     reset_client()
     st.session_state["visitor_openai_key"] = ""
     st.session_state["visitor_tavily_key"] = ""
+    if LOCAL_SETTINGS:
+        st.session_state['local_keys_enabled'] = False
 
 
 def advance(payload):
@@ -102,13 +112,22 @@ with st.sidebar:
     st.badge('FI / GROWTH',icon=':material/account_balance:',color='blue')
     st.markdown('## Research connections')
     st.caption('Choose the client and market at the top of the workspace.')
-    openai_key = st.text_input('OpenAI API key', type='password', key='visitor_openai_key', disabled=active, max_chars=300)
-    tavily_key = st.text_input('Tavily API key', type='password', key='visitor_tavily_key', disabled=active, max_chars=300)
+    use_local = False
+    if LOCAL_SETTINGS:
+        use_local = st.toggle('Use saved local keys',key='local_keys_enabled',on_change=reset_client,disabled=active)
+        if use_local:
+            loaded = bool(LOCAL_SETTINGS.get('openai_key') and LOCAL_SETTINGS.get('tavily_key'))
+            st.success('Saved local keys connected.' if loaded else 'Some saved local keys are missing; enter the missing key below.')
+        st.caption('Local launcher only. Public visitors provide their own keys. Saved key values are not placed in these inputs.')
+    entered_openai = st.text_input('OpenAI API key', type='password', key='visitor_openai_key', disabled=active, max_chars=300)
+    entered_tavily = st.text_input('Tavily API key', type='password', key='visitor_tavily_key', disabled=active, max_chars=300)
+    openai_key = entered_openai.strip() or (LOCAL_SETTINGS.get('openai_key','') if use_local else '')
+    tavily_key = entered_tavily.strip() or (LOCAL_SETTINGS.get('tavily_key','') if use_local else '')
     st.caption("Keys are sent to this app's server and held in your session memory for provider calls. Provider charges apply. They are not written to reports or saved to disk.")
     st.button('Clear keys & session',key='clear_keys',on_click=clear_credentials,width='stretch')
     with st.expander('Model settings'):
-        model_name = st.text_input('OpenAI model','gpt-6-luna',key='visitor_model',max_chars=100,disabled=active)
-        st.caption('Keys are never loaded from the host environment.')
+        model_name = st.text_input('OpenAI model',key='visitor_model',max_chars=100,disabled=active)
+        st.caption('Public app uses visitor keys only. Local saved settings are available exclusively through the local launcher.')
     with st.expander('Session & privacy'):
         st.caption('Runs and provider clients belong to your session. Switching mode or starting new research discards the prior report and approval; keys remain until Clear keys & session. Closing a tab does not guarantee immediate cleanup.')
 

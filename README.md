@@ -22,7 +22,7 @@ The default **Recorded evidence demo** needs no credentials. Click **Explore rec
 
 ## Enable live research
 
-Enter your own OpenAI and Tavily API keys in the password-masked research-panel inputs. Select an available OpenAI model under **Model settings** (default `gpt-6-luna`, used in the Charlotte live test). The web app does not load `.env`, process environment keys, or Streamlit secrets. The OpenAI API endpoint is fixed; a visitor cannot redirect keys to another endpoint.
+Enter your own OpenAI and Tavily API keys in the password-masked research-panel inputs. Select an available OpenAI model under **Model settings** (default `gpt-6-luna`, used in the Charlotte live test). The public `app.py` entry does not load `.env`, process environment keys, or Streamlit secrets. The separate local launcher below can read your saved `.env` keys. The OpenAI API endpoint is fixed; a visitor cannot redirect keys to another endpoint.
 
 Keys travel to the app server and remain in that visitor's session memory and provider clients. They are not intentionally written to disk, reports, URLs or logs; no shared graph or credential cache is used. **Clear keys & session** clears inputs and discards the active graph, provider references and report. Closing a tab does not guarantee immediate memory cleanup. Use HTTPS when hosting and do not paste keys into chat or screenshots. Provider usage is charged to the visitor's account. Existing local `.env` files remain ignored and excluded from deployment bundles.
 
@@ -116,3 +116,12 @@ Research mode, client name, market, website lookup/confirmation, goals and start
 Live users enter an FI name and market, request a likely official website, inspect its on-domain source, correct the domain if needed, and confirm before research. Failure permits manual domain entry followed by the same explicit confirmation. Changing identity, market or domain invalidates confirmation. Discovery preflight uses one search/model pair plus at most one on-domain follow-up when initial results are directories or otherwise ungrounded. It is part of Discovery, not a fifth agent. API attempts and costs feed the research run ledger; repeated user-triggered lookups also count.
 
 Validation: 54 tests passed in 17.231 seconds, including main-area selection, demo-to-live reset, active-client edits, confirmation invalidation, manual readiness, domain/quote grounding, bounded directory recovery and existing approval/credential regressions. Independent review found no Important/Critical issues. Live lookup successfully returned a sourced Truliant website suggestion after two search/model pairs; user confirmation was not bypassed. No full live competitor run or report approval was needed for this revision.
+
+
+## Local saved-key launcher
+
+Run `./run.ps1` to start `local_app.py` on http://127.0.0.1:8501. This separate entry checks loopback binding before reading the ignored `.env`. The local app defaults to Live research and enables saved keys without inserting their values into the browser inputs. Optional visitor-entered values override saved values locally. Clear keys & session discards research and disables automatic local keys; explicitly turn on Use saved local keys to restore them.
+
+Equivalent command: `python -m streamlit run local_app.py --server.address=127.0.0.1 --server.headless=true`.
+
+Public/Cloud/Docker deployment must continue to use **app.py**. It cannot read the local settings file and requires each visitor's own keys. Do not deploy local_app.py or upload .env. Existing ignore rules and Docker exclusions keep credentials out of Git and packages. Public deployment was not modified for the local-launcher change.
