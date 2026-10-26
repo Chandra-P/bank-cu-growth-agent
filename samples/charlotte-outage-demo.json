@@ -7,17 +7,26 @@
     },
     "market": "Charlotte, North Carolina",
     "product": "Consumer checking accounts",
-    "client_brief": ""
+    "client_brief": "",
+    "client_discovery": null
   },
-  "run_id": "7c0ac38f-debd-4220-ab3f-b4223300dc86",
+  "run_id": "932d767e-9233-4e24-a000-1b3e647f3027",
   "mode": "recorded",
-  "created_at": "2026-10-25T03:41:12.001758+00:00",
+  "created_at": "2026-10-26T06:12:09.048360+00:00",
   "status": "approved",
   "approval": {
     "approved": true,
-    "run_id": "7c0ac38f-debd-4220-ab3f-b4223300dc86",
+    "run_id": "932d767e-9233-4e24-a000-1b3e647f3027",
     "note": "Scripted recorded-evidence demonstration approval. Not a real human review or live provider evaluation.",
-    "at": "2026-10-25T03:41:12.464006+00:00"
+    "at": "2026-10-26T06:12:09.480188+00:00",
+    "target_alignment": {
+      "status": "not applicable",
+      "message": "No saved proposal budget.",
+      "client_target": null,
+      "client_outcome": "Not specified",
+      "budget_target": null
+    },
+    "target_alignment_confirmed": false
   },
   "competitors": [
     {
@@ -727,5 +736,8 @@
       "outcome": "ok",
       "duration_ms": 0
     }
-  ]
+  ],
+  "decision": "recorded scenario",
+  "discovery_questions": [],
+  "proposal": null
 }

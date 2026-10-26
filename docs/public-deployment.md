@@ -1,29 +1,30 @@
-# Public deployment — bring your own keys
+# Deployment
 
-Use a Python-capable host. The existing Streamlit/LangGraph service needs a running Python process and WebSocket support; a static website upload cannot run it.
+## Public Streamlit Cloud app
 
-## Streamlit Community Cloud
+Repository: https://github.com/Chandra-P/bank-cu-growth-agent
 
-1. Publish this project directory as the repository root on GitHub. Exclude `.env`, `.streamlit/secrets.toml`, runtime data, virtual environments and caches. Do not upload the containing workspace or other projects.
-2. Sign in at https://share.streamlit.io and select the repository and branch.
-3. Set the entry point to `app.py` and Python to **3.12** in advanced settings. `requirements.txt` pins the tested packages.
-4. Leave app secrets empty. Each visitor supplies OpenAI and Tavily keys through the app. Select public access in the host's sharing controls.
-5. Open the HTTPS app URL in a new browser session: recorded demo must work without keys; live mode must require both keys. Verify clearing keys resets the active run and two browser sessions do not share inputs or reports.
+Branch: `submission`. Entry point: `app.py`. Python: 3.12.
 
-Official reference: https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/deploy
+Public URL: https://bank-cu-growth-intelligence.streamlit.app/
 
-## Container alternative
+Deploy the project directory as repository root. Do not upload `.env`, secret files, virtual environments or runtime data. Leave hosted API secrets empty: live visitors supply their own OpenAI and Tavily keys. Recorded mode works without keys.
 
-Build `docker build -t fi-growth .` and run `docker run --rm -p 8501:8501 fi-growth`. The Docker build context excludes credentials via `.dockerignore`. Use a host with HTTPS termination and WebSocket support. No model or search keys should be configured as host secrets.
+After imported module or graph schema changes, reboot the app cleanly and verify a fresh session. Check that recorded mode starts, live mode requires visitor keys, changing client clears prior results, and approval gates downloads.
+
+## Local development
+
+Use `run.ps1` or `python -m streamlit run local_app.py --server.address=127.0.0.1 --server.headless=true`. The separate local entry point checks loopback before reading saved `.env` keys. Do not use it as the public entry point.
+
+## Container
+
+```powershell
+docker build -t fi-growth .
+docker run --rm -p 8501:8501 fi-growth
+```
+
+Provide HTTPS and WebSocket support on the host. Docker uses `app.py`; the build context excludes credential files.
 
 ## Data handling
 
-Keys are masked on screen, transmitted to the app server over the hosting connection, and retained in the visitor's session memory for remote API calls. They are not browser-only credentials. The clear action discards the graph as well as the inputs because graph closures hold provider clients. There is no shared credential cache or durable run store. Host operators control the runtime; visitors should trust the host before providing credentials. Disable external request-body capture and tracing when operating the service.
-
-Keep provider usage limits and workflow bounds in place. The app searches public product pages; it accepts no customer records. Reports retain evidence gaps and require explicit human approval before download.
-
-## Current release status
-
-Deployed publicly on October 24, 2026: https://bank-cu-growth-intelligence.streamlit.app/
-
-Source: https://github.com/Chandra-P/bank-cu-growth-agent · branch `submission` · entry point `app.py` · Python 3.12. Streamlit sharing explicitly reports **public and searchable**. No host API secrets were entered. Hosted live mode was checked with empty inputs and correctly disabled research; the key-free recorded workflow reached final review. No additional paid live call was made during deployment.
+Visitor keys reach the application server and remain in session memory for provider calls. No shared credential cache or durable customer database is used. Clear keys and session discards the active run and provider references. Avoid request-body logging and protect host access.

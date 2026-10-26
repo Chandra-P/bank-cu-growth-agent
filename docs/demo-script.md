@@ -1,51 +1,63 @@
-# Five-minute demo recording script
+# Demo walkthrough
 
-Target 4 minutes 30 seconds. Record the application and your voice; keep credentials and .env files off screen. Rehearse once. Use a live run if credentials are ready; otherwise explicitly identify recorded mode and explain that live API evaluation is pending.
+Target: under five minutes. Use a fresh browser session and keep credentials off
+screen. Identify the recorded mode explicitly. Show scored live-evidence evaluation
+results separately; do not claim the recorded UI is making new API calls.
 
-## 0:00–0:30 — User and problem
+## 0:00 to 0:25 The problem
 
-“I work with banks and credit unions on growth. I built a checking-account competitor research agent to turn scattered product pages into a sourced comparison and three growth hypotheses. The demo institution is Truliant in Charlotte.”
+Strategists spend an estimated one to two days reviewing materials and preparing an
+FI growth proposal. This workspace brings checking competitor evidence, client
+discovery, campaign hypotheses and editable budgets into one reviewed workflow.
+The under-60-minute target is proposed, not a measured time saving.
 
-## 0:30–1:00 — Scope and architecture
+## 0:25 to 0:50 Architecture
 
-Show the How it works tab after the brief is available, or explain the flow first: discovery, research, analysis and a LangGraph orchestrator. “It keeps state across steps and uses two human checkpoints. Each institution gets at most two searches, and failed remote calls get one retry.”
+Show the architecture: Streamlit, LangGraph and four roles—Discovery, Research,
+Strategy and Benchmarks. OpenAI provides structured responses, Tavily provides
+public research. Python controls validation and tool execution. Codex assisted
+implementation, tests and debugging.
 
-## 1:00–1:40 — Discovery and confirmation
+## 0:50 to 1:25 Client and competitors
 
-Start a run. Show the three candidates and official domains. Explain why the comparison set needs human confirmation: local relevance and credit union membership restrictions. Click Confirm and research. If the live run takes too long, show an already completed live run and explain when it ran; do not present recorded data as freshly searched.
+Choose the recorded Charlotte scenario, start it and review the three competitors.
+Explain that live mode first confirms an FI website and allows competitor
+correction. Confirm the comparison set and proceed. Recorded outputs are curated.
 
-## 1:40–2:40 — Comparison and evidence
+## 1:25 to 2:00 Evidence and discovery
 
-Show the checking comparison. Point out opening deposit versus ongoing balance and fee-waiver conditions. Open one institution in Evidence & gaps and show a supporting excerpt, source link and retrieval date. “Not verified is explicit missing evidence; it is not zero and does not prove no offer exists.”
+Show source-supported terms and Not verified gaps. Open an evidence excerpt.
+Explain that a quote is traceability, not complete disclosure verification. Show the
+client discovery checkpoint: an unknown problem produces questions, not campaigns.
 
-## 2:40–3:20 — Growth hypotheses
+## 2:00 to 2:40 Recommendations and budget
 
-Show one opportunity, its experiment and metric. “These are ideas to validate, not claims of guaranteed growth. The evidence supports the observed terms; the strategic interpretation still needs judgment.”
+Show a campaign's need connection, audience, channel role, experiment, measurement
+and caveat. Show the critique and single revision. In the planner, demonstrate an
+illustrative 300-funded-account scenario with $450 all-in CPA: $135,000 total;
+60/25/15 is $81,000 mail, $33,750 display, $20,250 social. These are assumptions,
+not verified benchmarks or predicted results. Save the scenario before review.
 
-## 3:20–3:55 — Error recovery
+## 2:40 to 3:20 Evaluation
 
-If using the recorded outage demo, state clearly: “This second run is a recorded-evidence replay with an injected Skyla outage.” Show the trace's two failed attempts and the unknown Skyla fields. Explain that the remaining comparison still completes. You may pre-run the outage example in a second tab to stay within five minutes; never imply it is a live API outage.
+Show the ten-case score table: 10/10 automated rubric passes and
+91.67/100 mean final score under the documented component
+settings. Explain the six dimensions and same-model judge limitation. Also show
+the separate pre-fix reliability result (2/10 passes), corrected
+model settings and successful post-fix smoke. Do not present quality scoring as proof of
+human acceptance, production availability or acquisition lift.
 
-## 3:55–4:20 — Human review and export
+## 3:20 to 4:00 Costs and approval
 
-Show downloads are absent before approval. Add a caveat, acknowledge review, approve, then download the briefing and evidence JSON. Explain that rejection prevents export.
+Recorded mode correctly reports zero external API calls. Explain that live mode
+tracks attempts, retries, input/output tokens, cache writes and estimated cost,
+flagging missing usage rather than treating it as free. Show review gating and
+demo approval, then the enabled Markdown and JSON downloads. Approval does not
+activate campaigns or spend money.
 
-## 4:20–4:40 — AI tools, learning and limits
+## Closing
 
-“I used Codex to help scope, code, test and document this build. The biggest lesson was that evidence, state and failure behavior matter as much as prompts. Quote checks are not semantic verification, and full disclosures still need review. The GitHub repository contains the app, tests and reproducible recorded sample.”
-
-Replace any unperformed claim with what actually happened. Mention live provider validation only after an observed successful live run. Add your own learning from using the app.
-
-## Updated four-agent demonstration
-
-Enter a business-level client goal, run the recorded demo and confirm competitors. Explain that its outputs are curated, not personalized. Show the strategist takeaway and a campaign card with direct mail/display/paid social roles. Open Benchmarks: recorded CPA is unknown, not an invented public benchmark. Open Review & revision: show the three findings and original-versus-final guardrail. Open Agent activity & costs: recorded mode has zero external calls and no simulated token totals. In live mode the same panel shows real provider attempts, separate input/output tokens and estimated model costs, with unknowns explicit. Finish at the unapproved human checkpoint. No campaign is published.
-
-
-## Discovery to proposal decision demo
-
-Enable Explore the discovery checkpoint in the recorded setup, start research and confirm competitors. At the new checkpoint, inspect the research snapshot and continue with the problem unknown. Show the Discovery needed decision, focused questions and zero campaign concepts; campaign/benchmark/revision calls are skipped. Click Complete discovery without repeating research. Enter an explicitly illustrative client-reported goal, timeframe, application-completion barrier, supporting observation and measurable success definition, then confirm. Explain that the recorded concepts remain curated; a live run uses the structured diagnosis in Strategy prompts. Show Recommendation logic & measurement on a campaign, then review/revision, costs and final human approval. Distinguish client-reported problems from source-supported public terms. Do not claim that checkbox confirmation proves a diagnosis or that public competitor research identifies an internal funnel problem.
-
-
-## Proposal planner demonstration
-
-After a campaign-ready run, open Proposal planner. State that USD 300–600 all-in CPA and the suggested channel shares are strategist assumptions, not verified benchmarks. With target 500 and base CPA 450, show USD 225,000 total. Include paid social to show 60/25/15 allocations (135,000 / 56,250 / 33,750). Save; change the target and show approval is blocked until saving or discarding. Explain that budget shares are not channel account shares and AI usage cost is separate. Final approval exports the saved scenario, not unsaved widget values. No spend is executed.
+The strongest lesson is that useful proposals depend on confirmed needs, grounded
+facts and consistent state. Historical benchmarks, audience activation and measured
+campaign reporting remain future work. Code, tests, diagrams and evaluation results
+are available in the repository.

@@ -2,40 +2,43 @@
 
 **Truliant Federal Credit Union · Charlotte, North Carolina**
 
-RECORDED EVIDENCE DEMO — curated extraction and hypotheses; no live Tavily or model calls
+RECORDED EVIDENCE DEMO — curated extraction and campaign concepts; no live Tavily or model calls
 
-Run: `7c0ac38f-debd-4220-ab3f-b4223300dc86` · Created: 2026-10-25T03:41:12.001758+00:00
+Run: `932d767e-9233-4e24-a000-1b3e647f3027` · Created: 2026-10-26T06:12:09.048360+00:00
 
 Status: Approved for export
 
 
 
-Source-supported means an official-domain excerpt supports the extracted claim. It is not independent verification. Search snippets may be incomplete or stale. Not verified never means zero or no offer. Hypotheses are inference for human review.
-
-## Checking comparison
+Source-supported means an official-domain excerpt supports the extracted claim. It is not independent verification. Search snippets may be incomplete or stale. Not verified never means zero or no offer. Campaign concepts are hypotheses for human review.
 
 
-## Client discussion context
-Not provided; confirm goals with the client.
+## Client goal or problem
+Client goal needs confirmation.
+
+**Planning decision:** recorded scenario
 
 ## Strategist takeaway
 The recorded checking pages show fees and opening-funding requirements with qualifications.
 **Implication:** Test clearer terms and switching guidance, after validating the client goal and actual customer friction.
 **Client validation question:** Is the priority more funded accounts, primary relationships, or resolving a specific acquisition problem?
 **Evidence:** demo-bofa, demo-truist
+
+## Checking comparison
+
 | Field | Truliant Federal Credit Union | Truist | Bank of America | Skyla Credit Union |
 | --- | --- | --- | --- | --- |
 | Product | Essentials Plus [demo-truliant] | Truist One Checking [demo-truist] | Advantage Plus Banking [demo-bofa] | Not verified |
 | Monthly maintenance fee | \$7.50 or \$0; waiver conditions apply [demo-truliant] | \$12 or \$0; waiver conditions apply [demo-truist] | \$12 or \$0; waiver conditions apply [demo-bofa] | Not verified |
 | Opening deposit | \$25 [demo-truliant] | \$50 [demo-truist] | Not verified | Not verified |
-| Ongoing balance requirement | Not verified | Not verified | Not verified | Not verified |
 | Fee waiver conditions | One route: \$500+ in total qualifying direct deposits; other routes require review [demo-truliant] | Not verified | One route: \$1,500 or more minimum daily balance; other routes require review [demo-bofa] | Not verified |
+| Ongoing balance requirement | Not verified | Not verified | Not verified | Not verified |
 | Acquisition offer and conditions | Not verified | Not verified | Not verified | Not verified |
 | Account / membership eligibility | Not verified | Not verified | Not verified | Not verified |
 | Positioning / core features | Not verified | Not verified | Not verified | Not verified |
 | Recent news | Not verified | Not verified | Not verified | Not verified |
 
-## Growth hypotheses — inference, not measured outcomes
+## Campaign concepts — hypotheses, not measured outcomes
 
 ### 1. Make the path to a waived monthly fee easy to understand
 The collected checking pages present fees alongside qualifying conditions. Clearer explanations may reduce uncertainty during account selection; these excerpts do not establish which institution is cheapest for every customer.

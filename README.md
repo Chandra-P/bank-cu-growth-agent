@@ -1,155 +1,74 @@
-# Bank & Credit Union Growth Intelligence Agent
+# Bank and Credit Union Growth Intelligence Agent
 
-A focused Project A submission: compare a bank or credit union's checking product with three confirmed competitors and review three client-needs-led campaign concepts, public CPA research, one strategy review/revision and session-local API usage/cost tracking.
+A strategist workspace for consumer checking research and campaign proposals. Compare a client FI with three confirmed competitors, connect public evidence to client needs, review campaign concepts and save an acquisition budget before approving report downloads.
 
-**Demo institution:** Truliant Federal Credit Union. **Market:** Charlotte, North Carolina. **Product:** consumer checking accounts.
+[Public app](https://bank-cu-growth-intelligence.streamlit.app/) · [Project documentation](docs/project-documentation.md) · [Evaluation method](evals/README.md)
 
-**Public app:** https://bank-cu-growth-intelligence.streamlit.app/ · Recorded demo requires no keys; live research uses each visitor's OpenAI and Tavily keys.
+## Run locally
 
-## Run it
-
-Python 3.12 is the tested runtime. From this folder:
+Python 3.12 is the tested runtime.
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe -m streamlit run app.py
+Copy-Item .env.example .env
+.\run.ps1
 ```
 
-If dependencies are already installed, run `python -m streamlit run app.py` or `./run.ps1`. On macOS/Linux, use `.venv/bin/python` in place of `.venv/Scripts/python.exe`.
+Enter local credentials in `.env`, never in source code. `run.ps1` launches `local_app.py` on loopback and can use saved OpenAI and Tavily keys automatically. To run the visitor-key interface instead:
 
-The default **Recorded evidence demo** needs no credentials. Click **Explore recorded demo**, **Confirm and research**, inspect the comparison/evidence/trace, acknowledge review, then **Approve and enable downloads**. The optional Skyla outage demonstrates a failed search, one retry, and explicit unknowns. No new API calls or LLM decisions occur in recorded mode; curated outputs exercise the same graph, grounding and approval logic.
-
-## Enable live research
-
-Enter your own OpenAI and Tavily API keys in the password-masked research-panel inputs. Select an available OpenAI model under **Model settings** (default `gpt-6-luna`, used in the Charlotte live test). The public `app.py` entry does not load `.env`, process environment keys, or Streamlit secrets. The separate local launcher below can read your saved `.env` keys. The OpenAI API endpoint is fixed; a visitor cannot redirect keys to another endpoint.
-
-Keys travel to the app server and remain in that visitor's session memory and provider clients. They are not intentionally written to disk, reports, URLs or logs; no shared graph or credential cache is used. **Clear keys & session** clears inputs and discards the active graph, provider references and report. Closing a tab does not guarantee immediate memory cleanup. Use HTTPS when hosting and do not paste keys into chat or screenshots. Provider usage is charged to the visitor's account. Existing local `.env` files remain ignored and excluded from deployment bundles.
-
-For GPT-5/GPT-6 and o-series reasoning model names, the client omits explicit temperature settings to avoid unsupported sampling parameters.
-
-Choose **Live research** at the top of the main workspace, enter the FI name and market, click **Find official website**, inspect/correct the suggestion, and explicitly confirm the FI and website before starting competitor discovery. Confirm or replace all three names and official domains. A failed discovery permits manual selection. Read-only search is autonomous after confirmation; downloads remain locked until final approval.
-
-Streamlit's built-in table CSV/clipboard export controls are disabled; use the approved briefing/evidence downloads. Approval is a workflow control, not a data-secrecy boundary: drafts are visible for review and can still be read or captured.
-
-## Public deployment
-
-See [deployment instructions](docs/public-deployment.md). Option 3 from the Figma concepts is implemented with the existing responsive Streamlit layout: blue-gray canvas, cobalt actions, navy research panel, summary metrics and three opportunity cards. The mockup's static desktop positioning is adapted to native widgets and mobile stacking.
-
-## Architecture
-
-```mermaid
-flowchart LR
-    A[Discovery agent + Tavily] --> B{Human confirms competitors}
-    B --> C[Research agent: official-domain search]
-    C --> D[Extract facts + validate evidence]
-    D --> E{Useful gap and search budget?}
-    E -->|One follow-up maximum| C
-    E -->|Next institution| C
-    E -->|Four profiles complete| F[Strategy agent: client-led campaign draft]
-    F --> J[Benchmarks agent: public CPA research]
-    J --> K[Strategy review and one revision]
-    K --> G{Human reviews brief}
-    G -->|Approve| H[Markdown + evidence JSON downloads]
-    G -->|Reject| I[End without export]
+```powershell
+python -m streamlit run app.py
 ```
 
-- **Discovery agent:** proposes three plausible local alternatives and their official domains. Candidates are not an independently verified “top three” ranking.
-- **Research agent:** extracts one mainstream checking product per institution; chooses a targeted follow-up query when evidence is incomplete. Opening deposit, ongoing balance and fee-waiver balance are separate fields.
-- **Strategy agent:** proposes three campaign concepts with audience, client-need connection, message, allowed channels, experiment, outcome and guardrail. After benchmark research it critiques the draft and revises once. The original and review findings remain inspectable.
-- **Benchmarks agent:** researches public checking account acquisition CPA evidence, retaining exact source quotes, account definitions, period, cost coverage and comparability. Missing CPA remains unknown; public results are not forecasts or rate cards.
-- **Orchestrator:** LangGraph `StateGraph` with conditional routing, `InMemorySaver`, native `interrupt()` gates and `Command(resume=...)`.
+The recorded Charlotte demo needs no credentials. It uses curated evidence and outputs, not new model calls. Choose **Recorded evidence demo** and **Explore recorded demo**, confirm competitors, inspect results and acknowledge review to enable approval. The optional discovery checkpoint and simulated outage demonstrate controlled decision paths.
 
-## State, limits and recovery
+## Workflow
 
-State holds the request, confirmed competitors, sources, grounded profiles, gaps, active institution/round, hypotheses, warnings, trace and approval. It survives Streamlit reruns in the active browser session. It is intentionally in memory: browser-session loss or process restart loses the run. Export approved files to retain them. There is no persistent customer memory or external database.
+1. Enter an FI name and market; confirm the official website suggestion or correct it.
+2. Review the three proposed competitor names and domains.
+3. Research one checking product per FI and inspect source-supported terms and missing evidence.
+4. Confirm the client goal, observed problem, timeframe and success definition. Missing discovery yields questions and no campaigns.
+5. Generate three campaign concepts, research public CPA evidence, critique and revise once.
+6. Save a target and budget scenario, review evidence and target alignment, then approve Markdown and JSON downloads.
 
-Each institution gets up to two searches, five results per search, and one retry per remote operation. A full run makes at most ten logical searches (one discovery, eight research and one benchmark) and thirteen logical model operations (one discovery, eight extractions, one strategy draft, one benchmark extraction, one critique and one revision), each with at most two attempts. Search timeout is 20 seconds; model timeout is 35 seconds. Exhausted search/extraction failures produce explicit unknowns. Exhausted analysis failures produce a partial comparison and a warning, never an offline result silently substituted into live mode. Latency and costs vary; live performance is not guaranteed.
+The four logical roles are Discovery, Research, Strategy and Benchmarks. LangGraph orchestrates Python-controlled API calls and human interrupts; the model does not execute arbitrary tools. The app never launches campaigns, sends reports or commits spend.
 
-Grounding checks enforce: known source ID, matching confirmed official domain, exact normalized quote match, and numeric values present in the quote. Explicitly uncertain or ambiguous claims remain unverified. Product identity must be source-supported before an institution can supply comparison terms. Tavily requests cleaned full-page text, retaining up to 14,000 characters per source with a search-excerpt fallback. This is still a lexical check; it does not prove semantic entailment, freshness or full disclosure coverage. Collected text can omit conditions, offers and dates. Human reviewers should check the full official pages. The app does not certify compliance or execute campaigns.
+![System architecture](docs/images/system-architecture.png)
 
-## Test and reproduce
+![Agent workflow](docs/images/agent-workflow.png)
+
+## Evidence and budget rules
+
+Claims require a collected official-domain source, exact normalized quote and matching numeric terms. Missing information remains **Not verified**. This establishes traceability, not independent truth or complete disclosure review.
+
+The default all-in checking CPA range of **$300/$450/$600** is a strategist assumption, not a verified benchmark. Mail/display defaults to **70/30**; including paid social suggests **60/25/15**. Shares are editable heuristics. All-in costs are not added again. Numeric targets and account outcomes must align before approval and export.
+
+## Credentials and privacy
+
+Public deployment uses **app.py**, which does not load local `.env`, process API keys or Streamlit secrets. Each visitor supplies their own keys for live research. Local saved-key access is isolated in `local_app.py` and requires loopback binding. `.env` and secret files are ignored and excluded from packages.
+
+Keys reach the server for API calls and remain in visitor session memory. They are not intentionally written to reports, URLs or logs. **Clear keys & session** discards the active run and provider references. Closing a tab does not guarantee immediate memory cleanup.
+
+## Tests and evaluation
 
 ```powershell
 python -m unittest discover -s tests -v
-python -m growth.cli --demo --approve-demo
 ```
 
-The CLI generates a labeled, scripted demo export under `samples/`. It is not a real human approval or a live API evaluation. Tests use the real graph and Streamlit AppTest; only external HTTP/model boundaries use fixtures or test doubles. See `docs/verification.md` for observed results and limits.
+The suite covers evidence grounding, retries, state resets, credential isolation, discovery and approval gates, budget arithmetic and usage accounting. Scored recommendation evaluation is opt-in and uses paid APIs; see [evals](evals/README.md). Automated rubric scores do not establish human acceptance, acquisition lift or the proposed under-60-minute productivity target.
 
-## Submission assets
+## Repository structure
 
-- `docs/project-documentation.md`: copy-ready project narrative, decisions, data provenance and learnings.
-- `docs/demo-script.md`: under-five-minute recording outline.
-- `docs/submission-checklist.md`: remaining submission steps and URLs.
-- `samples/`: sample briefing and evidence JSON, clearly labeled by execution mode.
-- `docs/design.md`, `docs/implementation-plan.md`, `docs/build-ledger.md`: design and development record.
+```text
+app.py                Public Streamlit entry point
+local_app.py          Loopback launcher with optional saved credentials
+growth/               Workflow, providers, evidence, planning, reports and UI
+data/                 Recorded demo fixture
+tests/                Automated regression tests
+evals/                Fixed cases, scoring rubric, runners and results
+samples/              Labeled recorded demo and outage exports
+docs/                 Project documentation, diagrams, deployment and demo guide
+```
 
-## Source provenance and original work
-
-Recorded evidence is a small curated set of official product-page excerpts collected October 24, 2026. See `data/demo.json` for URLs and collection notes. Competitor selection in this replay is illustrative and user-confirmed, not a market-share analysis. Full disclosures and all eligibility/offer terms were not captured. The live system uses Tavily; the recorded fixture was collected during development with web research and is not a stored Tavily response.
-
-Built for this project from its requirements. The handout's supplied solution documents were not consulted. AI coding tools assisted with design, implementation, testing and documentation; see the prompt/iteration log in the project document. Review the final submission and add your own observations before presenting it as your work.
-
-## Review, revision and usage visibility
-
-The UI has Comparison & opportunities, Evidence & gaps, Benchmarks, Review & revision, Agent activity & costs, and How it works tabs. The Strategy agent performs review/revision; there is no fifth agent. Invalid revision references or exhausted review/revision failures retain the original draft and display warnings. One revision cycle can make up to two HTTP attempts; no unbounded reflection loop runs. An accepted revision does not certify that every review concern was resolved.
-
-Provider calls are orchestrated Python calls. Models return structured decisions; this is not an autonomous function-calling tool loop. The activity panel distinguishes workflow operations from actual provider attempts. Demo activity is local replay with zero external calls and no fabricated usage.
-
-OpenAI response usage is captured before JSON parsing, including responses requiring retries. Records include role, action, attempt, model, timing, input/output/total tokens, cache reads and reasoning tokens when available, plus separate input/output cost estimates. Cached tokens are a subset of input and reasoning tokens a subset of output. Missing provider usage and unmatched pricing remain unknown, with partial totals explicitly identified. Model pricing is a dated standard-text snapshot linked to the official source; unsupported billing tiers are unpriced. Tavily basic-search credits are separate; failed/uncertain charges remain unknown and actual dollar charges depend on the visitor plan. Provider bills remain authoritative.
-
-No prompts, raw provider error bodies or keys are included in activity events. Structured outputs and client context are retained in the session and approved exports as described above. No LangSmith tracing is enabled and no extra monitoring credential is required.
-
-
-## Cache-write accounting correction
-
-Cache writes are now retained and priced as part of input, without double counting. The activity panel includes write tokens and write-cost components. Default 30m implicit writes and provider-reported mixed lifetime breakdowns are supported. Missing counts or unsupported pricing remain explicit unknowns. Historical incomplete runs must be rerun; no counts were invented. See [cache-cost accounting](docs/cache-costs.md) for formulas, assumptions and live verification.
-
-Full suite: 49 tests passed in 13.875 seconds. Live probe: 1,683 input tokens, 1,680 cache writes and 203 output tokens; complete estimate $0.0003118. Independent review found no important issues. Existing submission branch and public app are updated as explicitly requested.
-
-
-## Client selection and website confirmation
-
-Research mode, client name, market, website lookup/confirmation, goals and start controls are now at the top of the main workspace. Keys/model/privacy remain in the sidebar. Switching modes or changing the live client/market discards the previous graph, demo/live report, approval, goals, website suggestion and confirmation. API keys stay until Clear keys & session. Mode selection and live name/market edits remain available while a report is open. No demo comparison or export survives switching to live.
-
-Live users enter an FI name and market, request a likely official website, inspect its on-domain source, correct the domain if needed, and confirm before research. Failure permits manual domain entry followed by the same explicit confirmation. Changing identity, market or domain invalidates confirmation. Discovery preflight uses one search/model pair plus at most one on-domain follow-up when initial results are directories or otherwise ungrounded. It is part of Discovery, not a fifth agent. API attempts and costs feed the research run ledger; repeated user-triggered lookups also count.
-
-Validation: 54 tests passed in 17.231 seconds, including main-area selection, demo-to-live reset, active-client edits, confirmation invalidation, manual readiness, domain/quote grounding, bounded directory recovery and existing approval/credential regressions. Independent review found no Important/Critical issues. Live lookup successfully returned a sourced Truliant website suggestion after two search/model pairs; user confirmation was not bypassed. No full live competitor run or report approval was needed for this revision.
-
-
-## Local saved-key launcher
-
-Run `./run.ps1` to start `local_app.py` on http://127.0.0.1:8501. This separate entry checks loopback binding before reading the ignored `.env`. The local app defaults to Live research and enables saved keys without inserting their values into the browser inputs. Optional visitor-entered values override saved values locally. Clear keys & session discards research and disables automatic local keys; explicitly turn on Use saved local keys to restore them.
-
-Equivalent command: `python -m streamlit run local_app.py --server.address=127.0.0.1 --server.headless=true`.
-
-Public/Cloud/Docker deployment must continue to use **app.py**. It cannot read the local settings file and requires each visitor's own keys. Do not deploy local_app.py or upload .env. Existing ignore rules and Docker exclusions keep credentials out of Git and packages. Public deployment was not modified for the local-launcher change.
-
-
-## Abbreviated website lookup and retry — October 25, 2026
-
-Lookup expands standalone CU and FCU for search/model context while retaining user input. Both search and deterministic acceptance exclude common technical-hosting, directory and social domains. This prevents an on-domain identity quote from a hosting copy being accepted as the FI's official public domain. Unknown/provider-failure primary results receive one bounded alternative query; retry remains an explicit user action after exhaustion. No FI-domain mapping is hardcoded.
-
-Failure state now persists across reruns and changes the primary action to Retry website lookup, with manual-domain fallback explained. Every retry clears stale suggestion/domain/confirmation, retains paid attempts in the run ledger, and still requires user confirmation. A wrong proposed domain can still constrain the bounded follow-up; retry and manual correction remain available. Network/provider success cannot be guaranteed.
-
-Validation: 61 tests passed in 21.513 seconds, including abbreviation search, provider recovery, technical-host rejection, persistent retry UI and successful retry without auto-confirmation. A real short-name/no-market test returned uhcu.org with one search and one model operation (estimated model cost $0.00031355). Independent review found no important defects. Public app remains BYOK; local saved-key behavior is unchanged.
-
-
-## Discovery before proposals
-
-Live runs now pause after competitor research for a structured strategist checkpoint: goal, timeframe, funnel problem, client observation, success definition, constraints and confirmation. Unknown problems or missing required discovery fields produce a discovery brief with questions and no campaigns. Strategy, benchmark and revision calls are deferred. Complete discovery without repeating the institution research. Every campaign exposes its problem/evidence/intervention/channel/measurement logic and unresolved assumptions. Client reports are never labeled independently verified. Confirmation is an assertion about the entered brief, not proof of causality or a semantic validator.
-
-The default recorded replay remains a curated scenario. Enable **Explore the discovery checkpoint** in the recorded setup to demonstrate both decision paths without external calls. Its campaign examples remain curated and explicitly not personalized. Existing memory-only runs should start a new research run to use the updated graph. Final human approval still gates exports of both discovery and campaign briefs. Budget forecasting, branch-overlap ranking, audience execution and reporting dashboards remain future work.
-
-
-## Proposal planning scenarios
-
-Proposal planner is available after confirmed discovery/campaign drafting, or in the explicitly curated recorded replay. Enter a target funded-account count; it is not inferred from free-text goals. Defaults are strategist-provided all-in checking CPA USD 300/450/600, direct mail/display 70/30, and 60/25/15 when paid social is selected. Targets, CPA, shares, account definitions and notes are editable. These are assumptions and budget envelopes, not verified industry benchmarks, optimized mix or promised account outcomes. Included media, production, data, fees and incentives are never added a second time. Channel budget shares do not predict channel account contributions.
-
-Save the scenario before approving. Unsaved edits block approval; save resets the review acknowledgement. Final approval exports the saved scenario in Markdown and JSON; approved/rejected scenarios are locked. Client changes and discovery refinement clear budget state. The calculator makes no model/search calls and uses exact-cent arithmetic. It does not automatically rank campaigns, adopt public benchmarks, infer channel-specific CPA or launch spend.
-
-
-## Align client and budget targets
-
-Discovery includes optional explicit target count and outcome (opened, funded or activated). A confirmed funded-account count prefills the planner. Numeric mismatch or incompatible opened/activated outcome blocks saving and approving a funded-account CPA scenario. Where a comparable client target is not specified, the budget remains an assumption and requires explicit target review before approval. The graph enforces the guard even for direct resume calls; invalid approval pauses for correction. The export rechecks the saved approval receipt against the current target. No numeric count is inferred from free text.
+See [deployment](docs/public-deployment.md), [verification](docs/verification.md), [cost accounting](docs/cache-costs.md) and the [demo guide](docs/demo-script.md).

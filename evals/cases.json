@@ -1,0 +1,12 @@
+[
+ {"id":"FI01","name":"Frost Bank","domain":"frostbank.com","market":"San Antonio, Texas","problem":"Account funding","target":300,"competitors":[["RBFCU","rbfcu.org"],["Chase","chase.com"],["Wells Fargo","wellsfargo.com"]]},
+ {"id":"FI02","name":"United Heritage Credit Union","domain":"uhcu.org","market":"Austin, Texas","problem":"Application completion","target":250,"competitors":[["UFCU","ufcu.org"],["Amplify Credit Union","goamplify.com"],["Chase","chase.com"]]},
+ {"id":"FI03","name":"Truliant Federal Credit Union","domain":"truliantfcu.org","market":"Charlotte, North Carolina","problem":"Awareness","target":400,"competitors":[["Skyla Credit Union","skylacu.com"],["Truist","truist.com"],["Bank of America","bankofamerica.com"]]},
+ {"id":"FI04","name":"BECU","domain":"becu.org","market":"Seattle, Washington","problem":"Account activation","target":350,"competitors":[["Sound Credit Union","soundcu.com"],["Chase","chase.com"],["Bank of America","bankofamerica.com"]]},
+ {"id":"FI05","name":"Digital Federal Credit Union","domain":"dcu.org","market":"Worcester, Massachusetts","problem":"Account funding","target":200,"competitors":[["UniBank","unibank.com"],["Bank of America","bankofamerica.com"],["Citizens","citizensbank.com"]]},
+ {"id":"FI06","name":"Alliant Credit Union","domain":"alliantcreditunion.org","market":"Chicago, Illinois","problem":"Awareness","target":500,"competitors":[["BMO","bmo.com"],["Chase","chase.com"],["Wintrust","wintrust.com"]]},
+ {"id":"FI07","name":"Huntington Bank","domain":"huntington.com","market":"Columbus, Ohio","problem":"Application completion","target":300,"competitors":[["Fifth Third Bank","53.com"],["PNC","pnc.com"],["Wright-Patt Credit Union","wpcu.coop"]]},
+ {"id":"FI08","name":"Regions Bank","domain":"regions.com","market":"Birmingham, Alabama","problem":"Account funding","target":275,"competitors":[["PNC","pnc.com"],["America's First Federal Credit Union","amfirst.org"],["Avadian Credit Union","avadiancu.com"]]},
+ {"id":"FI09","name":"Fifth Third Bank","domain":"53.com","market":"Cincinnati, Ohio","problem":"Account activation","target":225,"competitors":[["Huntington Bank","huntington.com"],["PNC","pnc.com"],["General Electric Credit Union","gecreditunion.org"]]},
+ {"id":"FI10","name":"PNC","domain":"pnc.com","market":"Pittsburgh, Pennsylvania","problem":"Application completion","target":325,"competitors":[["Dollar Bank","dollar.bank"],["Citizens","citizensbank.com"],["First National Bank","fnb-online.com"]]}
+]

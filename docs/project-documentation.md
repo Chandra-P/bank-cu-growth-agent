@@ -1,109 +1,231 @@
-# Bank & Credit Union Growth Intelligence Agent
+# Bank and Credit Union Growth Intelligence Agent
 
-Week 3 / Project A — Market Research Agent: Competitor Analysis
+Project documentation
 
-## Project overview
+## Part 1 Use case
 
-This project helps bank and credit union growth teams research competing checking products and decide what acquisition ideas to test. The demo uses Truliant Federal Credit Union in Charlotte, North Carolina, with Truist, Bank of America and Skyla Credit Union as illustrative competitors. The user confirms the comparison set; the system does not claim a verified market-share ranking.
+The Bank and Credit Union Growth Intelligence Agent helps FI growth and marketing strategists prepare checking acquisition proposals by researching competitors, developing campaign concepts and calculating an editable budget in Streamlit, with human confirmation and final approval.
 
-## Agent one-liner
+Built with Python, LangGraph, OpenAI, Tavily and Streamlit. Data comes from live public web research, strategist entered discovery information and curated recorded demo evidence.
 
-My agent helps a bank or credit union growth professional compare three competitors' checking offers in a web app, replacing manual product-page research and comparison assembly. It discovers candidates, searches official domains, extracts sourced terms and proposes three growth hypotheses using search and model tools. It asks a human to confirm competitors and approve the final brief before export. The proposed success criterion is a useful, source-traceable brief within 15 minutes on at least 8 of 10 evaluated tasks, with no invented financial terms accepted during human review. That is an evaluation target, not a measured result.
+### Problem statement
 
-## User and business problem
+Strategists currently spend 1 to 2 days reviewing materials and preparing a proposal. Researching products, comparing competitors and translating client goals into campaign options and costs often span separate searches and spreadsheets. The application brings those steps together while exposing evidence gaps and planning assumptions.
 
-Growth teams need to understand how competing checking products are positioned, which conditions affect fees, and where a clearer switching journey or message might improve acquisition. Public information is scattered, changes over time and is easy to misread. Opening deposits, ongoing balances and fee-waiver balances are different concepts. Missing offer information should not be interpreted as the absence of an offer.
+### Scope
 
-## Scope and deliverable
+The current scope is consumer checking, one product per institution, with direct mail, display and paid social campaign options. Outputs include a competitor comparison, strategist takeaway, three campaign concepts, public CPA research, a saved budget scenario and approved Markdown and JSON reports.
 
-One home institution, one market, consumer checking accounts and three confirmed competitors. The output is a comparison of fees, opening funding, balance requirements, fee waivers, acquisition offers, eligibility, positioning and recent news, plus three proposed growth experiments. Fields lacking evidence remain Not verified. Each supported fact retains a source ID and supporting excerpt. Reports can be downloaded as Markdown and structured evidence JSON after approval.
+Campaign execution, audience activation, CRM updates, historical performance reporting, branch overlap scoring and persistent databases are outside the current implementation. The application does not commit budget or guarantee acquisition results.
 
-## Architecture and agent roles
+### Project access
 
-The Streamlit interface drives a LangGraph StateGraph. Discovery uses search evidence to propose competitors. The research agent searches each confirmed official domain and extracts one mainstream checking product per institution. It chooses a targeted follow-up query when the evidence is incomplete; the orchestrator permits at most one follow-up per institution. The analysis agent proposes evidence-linked hypotheses, an experiment, a success measure and a limitation for each. The orchestrator controls sequence, state, budgets, errors and native human interrupts.
+Application: https://bank-cu-growth-intelligence.streamlit.app/
+Code: https://github.com/Chandra-P/bank-cu-growth-agent
+Runtime: Python 3.12
+Interface: Streamlit
+Recorded demo: available without API keys
 
-Workflow: discovery → human confirmation → search → extraction/evidence check → bounded follow-up or next institution → analysis → human review → approved export or rejection.
+## Part 2 Agent framework
 
-This is a multi-agent orchestration pattern with specialized prompts and shared state. Agents do not conduct free-form conversations with one another. In live mode the model chooses competitor candidates, extracted fields and useful follow-up queries. In recorded mode those choices are curated fixtures; the graph, evidence checks, retries and approval gates still execute.
+### Agent statement
 
-## Tools and data
+My agent helps FI growth strategists research competitors and prepare checking campaign proposals in Streamlit, replacing 1 to 2 days of manual material review and proposal preparation, autonomously researching, analyzing and drafting through two external API tools, Tavily search and OpenAI model inference, handing identity confirmation and final approval to a human, with success targeted as a usable reviewed first proposal in under 60 minutes in at least 8 of 10 cases.
 
-Live mode uses Tavily search and a configurable OpenAI-compatible chat model through langchain-openai. Model name, endpoint and keys are configured locally. Development was tested with Python 3.12, Streamlit 1.65.0 and LangGraph 1.2.16.
+| Framework field | Implementation |
+| --- | --- |
+| Agent goal | Turn confirmed client needs and competitive evidence into a reviewed checking acquisition proposal. |
+| Where people use it | A Streamlit web workspace for internal FI growth and marketing strategists. |
+| Steps in order | 1. Confirm FI and competitors. 2. Research and confirm needs. 3. Draft, benchmark and revise. 4. Save budget, review and export. |
+| Actions and tools | 1. Website lookup and 2. public research are read only. 3. Extract and validate facts, 4. draft and review campaigns and 5. calculate budgets update session content only. 6. Export creates a downloadable report after approval; no external business record is changed. |
+| Memory | Institutions, sources, profiles, discovery, drafts, budgets, approval and usage live in session memory. Client changes reset analysis; there is no persistent cross session database. |
+| Hard limits | Never invent facts, expose credentials, commit spend or launch campaigns. Keep unknown terms unverified and CPA assumptions labeled. |
+| Human in the loop | Confirm the domain, competitors and client discovery; correct inputs as needed. Acknowledge evidence and target alignment before final approval and export. |
+| Failure handling | Retry remote calls once; offer manual website correction and explicit evidence gaps. Preserve grounded facts after a failed follow up and return invalid approvals for correction. |
+| Success measure | At least 8 of 10 distinct FI cases yield a strategist accepted first proposal in under 60 elapsed minutes; this is an evaluation target, not a measured result. |
 
-Recorded sources collected October 24, 2026:
+### Measurable success criterion
 
-- Truliant: https://www.truliantfcu.org/bank/checking-comparison
-- Truist: https://www.truist.com/checking
-- Bank of America: https://www.bankofamerica.com/deposits/checking/advantage-banking/
-- Skyla: https://www.skylacu.com/bank/checking/simply-checking
+Time each case from a complete client brief with working credentials through human review and approved export, including retries and edits; count blocked and failed cases. A passing proposal covers three reviewed competitors, traceable claims or explicit gaps, relevant campaigns, labeled CPA assumptions and an accurate budget aligned with the funded account target, accepted for client discussion with only minor edits.
 
-The demo dataset consists of short, noncontiguous official-page excerpts and curated extractions; it is not a stored Tavily response and does not contain complete disclosures. Acquisition offers, some membership requirements, recent news and other fields are intentionally left unverified. There is no private customer, transaction or internal bank data.
+The 1 to 2 day baseline is a domain estimate, not a timed study. A timed 10 case human strategist evaluation is still required; automated recommendation scores do not establish human acceptance or time savings. The target concerns a first proposal, not final client approval.
 
-## State and memory
+## System architecture
 
-The graph stores request, candidates, confirmed competitors, source register, extracted facts, gaps, research index and round, hypotheses, warnings, trace and approval. InMemorySaver holds checkpoints across Streamlit reruns within the active session. Process restart or browser-session loss clears runs. There is no long-term memory claim; approved exports provide a retained artifact.
+A Streamlit workspace connects the strategist to a LangGraph workflow with four specialist agent roles. Python services handle provider calls, evidence checks, proposal calculations and session usage tracking.
 
-## Autonomy, human intervention and limits
+![Diagram](images/system-architecture.png)
 
-Read-only research proceeds autonomously after competitor confirmation. One native interrupt pauses before research; another pauses before export. Rejection ends the run without downloads. The app does not send emails, publish campaigns, change product terms or write to a CRM. Internal ephemeral checkpoints are automatic; exporting a shareable report requires approval.
+The four agents share a configurable model client. LangGraph coordinates state and human interrupts; it is not an additional model agent. Session data is held in memory rather than a persistent customer database.
 
-At most two search rounds per institution, five returned sources per search and two attempts per remote operation. For a complete run that is at most ten logical searches and thirteen logical model operations, each with one retry. Timeouts are configured per provider call. Total duration depends on provider latency; no measured live runtime is claimed yet.
+## Agent workflow
 
-## Evidence and error handling
+Research and recommendations move through explicit review checkpoints. Incomplete discovery returns questions; invalid proposal inputs return to correction before approval.
 
-A supported fact must reference a collected source on the confirmed official domain, include an exact whitespace-normalized excerpt match, and contain no numeric token absent from that quote. Explicit uncertainty is rejected, and all comparison terms are withheld when the selected product cannot be identified from source evidence. Live search requests fuller page text with a snippet fallback, capped at 14,000 characters per source. These checks catch source and amount fabrication but do not establish semantic truth or completeness. Source-supported means supported by the collected evidence, not independently verified. Full source review is a human responsibility.
+![Diagram](images/agent-workflow.png)
 
-Search or extraction failures are retried once; after that the system retains partial evidence and marks unsupported fields Not verified. Analysis failures retain the comparison and flag missing hypotheses. Live mode never silently falls back to curated demo answers. API errors are sanitized so provider response bodies and credentials are not exposed in the UI or trace. Collected text is treated as data in model prompts; prompt injection remains a limitation, and the system has no external write tools.
+## Components data and prompts
 
-## Prompts used during AI-assisted development
+| Component | Purpose |
+| --- | --- |
+| app.py and local_app.py | Public interface and separate loopback local launcher |
+| growth/graph.py and models.py | Workflow routing, human interrupts and typed state |
+| growth/providers.py and website.py | OpenAI and Tavily operations and website lookup |
+| growth/evidence.py and discovery.py | Source grounding and discovery readiness |
+| growth/planning.py and report.py | Budget calculation, target alignment and approved exports |
+| growth/usage.py | Tool attempts, token usage and estimated cost |
+| growth/panels.py and dashboard.py | Streamlit controls and presentation |
 
-The initial project-selection request was: “given that i work on FI space supporting the growth of banks and CUs Which project should I choose if I want to finish and submit it by tomorrow?”
+### Data model
 
-The build request was: “Let's go with Project A. Help me build the Bank & Credit Union Growth Intelligence Agent and get it ready to submit by tomorrow.”
+Each institution profile stores product name, monthly fee, opening deposit, minimum balance, fee waiver, acquisition bonus, eligibility, positioning and recent news. Evidence records contain a source ID, URL, excerpt and supporting quote. Discovery stores the client goal and outcome definition. Proposal state stores the target, CPA scenarios, channel shares, notes and review receipt.
 
-The implementation direction was: “Yes, proceed with Python + LangGraph + Streamlit. Pick a representative bank or credit union and market for the demo, and keep the scope focused so we can submit tomorrow.”
+### Evidence rules
 
-These are the actual development instructions, not invented iterations. Codex assisted with design, test writing, implementation and documentation. Runtime agent prompts are in growth/providers.py: they require structured JSON, one checking product per institution, source IDs and exact quotes, preservation of qualifiers, distinct balance concepts, and no invented claims. The analysis prompt labels proposed growth opportunities as hypotheses.
+A source supported claim must use a collected source on the confirmed domain with an exact normalized quote and matching numeric tokens. Product identity must be supported before product terms can be accepted. Unknown information is not treated as zero or no offer. Supported claims appear first.
 
-## Iterations and observations
+Quote matching provides traceability rather than independent factual verification. Source freshness, complete conditions and eligibility require human review. Client reported goals and illustrative inputs remain separate from public evidence.
 
-1. Narrowed a broad FI growth assistant to checking-account competitor research to avoid internal integrations and meet the deadline.
-2. Separated source-backed facts from growth hypotheses so experiments are not mistaken for proven outcomes.
-3. Checked current official pages rather than assuming older “free checking” descriptions still apply; Truliant's current comparison presents Essentials Plus.
-4. Added a recorded-evidence mode to demonstrate the graph and approval gates without credentials, while keeping that mode distinct from a live model run.
-5. Added source-domain, quote and numeric consistency checks, bounded retries, explicit unknowns and a simulated outage.
-6. Added automated graph and Streamlit interaction checks. See docs/verification.md for final observed results; do not claim live provider success until the live smoke check has passed.
-7. Refined the interface after user feedback: navy research sidebar, blue-gray workspace, teal actions, compact summary cards, clearer comparison and opportunity sections, and expandable caveats.
+### Prompt design
 
-## Evaluation approach
+The shared system instruction requires structured JSON, treats retrieved content as data, prohibits invented facts and source IDs, preserves product conditions and requires explicit unknowns. Stage specific prompts guide website identity, competitor selection, extraction, campaign drafting, critique and benchmark qualification.
 
-Automated checks exercise the graph end to end, approval and rejection, export gating, unknowns after an outage, retry bounds, domain lookalikes and invalid evidence. Streamlit AppTest checks the actual user interactions. These are software checks, not a benchmark of research quality or acquisition uplift.
+Campaign prompts connect the recommendation to the confirmed client problem and observation. Review checks grounding, channel relevance and unsupported assumptions. An invalid revision retains the original draft with a warning.
 
-Before submission, perform one live research run with configured credentials and inspect each supported term against its official page. Record the model/endpoint used, elapsed time, completeness, incorrect claims and whether the final brief was useful. A larger evaluation would use ten institution/market tasks scored against an independently assembled reference set. Growth hypotheses would need real experiments to establish business impact.
+## Proposal planning and human review
 
-## Limitations and next steps
+### Budget scenarios
 
-Search snippets can omit conditions, contain stale terms or mix products. Quote checks are lexical. Domain identity and market relevance require human confirmation. Membership eligibility and acquisition offers require full disclosure review. There is no persistent database, historical monitoring, campaign execution, verified market-share ranking or claim of production readiness. Next steps would be fuller source retrieval, independent evaluation, durable storage and testing with growth professionals.
+The planner uses an editable all in checking CPA range of $300 low, $450 base and $600 high. These defaults are strategist planning assumptions, not verified industry benchmarks. Public benchmark candidates retain their source, account definition and cost coverage; they do not automatically replace the scenario inputs.
 
-## Submission links to add after final user actions
+Budget equals target accounts multiplied by all in CPA. Media, production, data, fees and incentives are included rather than added again. The default mail and display mix is 70 and 30 percent. Including paid social suggests 60 percent mail, 25 percent display and 15 percent social. Shares are editable heuristics, not optimized allocations or predicted acquisition contributions.
 
-- GitHub repository: pending authenticated publication.
-- Demo recording: pending user recording, maximum five minutes.
-- Live provider verification: OpenAI and Tavily authenticated; a preliminary live run completed and prompted stricter source checks. See docs/verification.md for final QA results.
+| Illustrative scenario | Amount |
+| --- | --- |
+| Funded checking target | 300 accounts |
+| Base all in CPA | $450 |
+| Total base budget | $135,000 |
+| Direct mail at 60 percent | $81,000 |
+| Display at 25 percent | $33,750 |
+| Paid social at 15 percent | $20,250 |
 
-The handout's provided solution documents were not consulted during this implementation. The user should review the app and narrative, add their own live-run observations, and ensure the recording accurately represents which mode is demonstrated.
+### Approval boundaries
 
+Humans confirm the official website and competitor set, complete client discovery and review the final proposal. A structured funded account target prefills the planner. Conflicting targets or an incompatible opened or activated account outcome block approval and export. Unspecified targets require explicit assumption acknowledgement.
 
-### Four-agent release update
+Budget shares must total 100 percent and CPA scenarios must be positive and ordered. Exact cent arithmetic keeps channel totals consistent. Unsaved changes invalidate review; saved approved proposals are locked. Approval enables Markdown and JSON downloads only. Drafts remain visible for review.
 
-Current workflow: Discovery → human competitor confirmation → Research → Strategy draft → Benchmarks → Strategy critique → one revision → human approval/export. Only checking and direct mail/display/paid social are supported. The original architecture above records the initial baseline; README and docs/verification.md describe the current release. Activity/cost tracking uses provider response metadata, not fabricated token counts. Costs are separate input/output estimates with dated model pricing, cache-read handling and explicit unknowns. Search credits are tracked separately. No LangSmith service is enabled. Editable all-in proposal scenarios are now available; internal benchmarks/rate cards and optimized forecasts remain future increments.
+### Observability
 
+The in app panel reports provider attempts, retries, outcomes, durations, input and output tokens, cache reads and writes, and estimated model cost. Ordinary input, cache reads, cache writes and output are priced once each using a dated rate table. Missing usage or unknown pricing is flagged as incomplete. Tavily credits are reported separately; total provider charges depend on the visitor’s plan.
 
-## Discovery to proposal checkpoint
+## Part 3 Selected build track and tools
 
-Live workflow: competitor confirmation → institution research → strategist discovery checkpoint → ready: campaign draft, benchmark research, critique and one revision; incomplete: focused discovery questions with no campaign/benchmark/model calls → final human review/export. Refining the discovery brief reuses completed research. The four logical roles are unchanged. The default recorded replay retains its curated scenario; its optional checkpoint demonstrates readiness logic with zero external calls. Missing or explicitly unknown goal, timeframe, problem, observation, success definition or confirmation withholds campaigns. Client-reported inputs remain separate from source-supported public claims.
+Selected track: Track 2, code with Python, LangChain and LangGraph. The workflow requires four specialist roles, shared state, conditional routing, bounded retries and human checkpoints. Code provides direct control over these behaviors and allows automated regression checks; the tradeoff is more implementation and maintenance effort.
 
+| Tool | Role and reason for selection |
+| --- | --- |
+| Python | Implements API services, evidence validation, exact budget calculations and automated tests in one codebase. |
+| LangChain integration | langchain openai provides the model client and structured response integration without custom low level model plumbing. |
+| LangGraph | Coordinates stateful steps, conditional paths and resumable human interrupts for discovery and final review. |
+| OpenAI API | Generates structured extraction, campaign concepts, critique and revision. It is the selected model provider for the implemented workflow. |
+| Tavily Search API | Retrieves current public web evidence with source URLs and excerpts, including searches restricted to confirmed official domains. |
+| Streamlit | Provides a Python web interface for client inputs, evidence, campaign cards, budget editing and human review. |
+| Pydantic | Validates structured model responses and workflow inputs so malformed or incompatible data is rejected. |
+| Custom usage ledger | Captures attempts, input and output tokens, cache categories and estimated costs directly in the app without a separate tracing service. |
+| Codex | Assisted implementation, debugging, regression tests and documentation; business decisions and review remain with the strategist. |
+| GitHub and Streamlit Cloud | GitHub stores the code; Streamlit Cloud hosts the public demonstration with visitor supplied API keys. |
 
-## Funded checking proposal scenarios
+### Implementation boundaries
 
-The Proposal planner uses strategist-provided all-in CPA assumptions (USD 300/450/600) and an explicitly entered funded-account target. Suggested channel envelopes are 70/30 direct mail/display and 60/25/15 when paid social is selected. Values are editable; the numerical split is a heuristic, not a verified industry benchmark. Exact-cent allocation reconciles to the total. No included costs are added again and no channel account-contribution forecast is inferred. Save before approval; unsaved edits block approval, approved/rejected values are locked, and saved inputs/totals are retained in gated Markdown and JSON exports. The calculator makes no provider calls. It does not rank a preferred campaign or automatically adopt public CPA candidates.
+The application uses OpenAI and Tavily with a custom session usage ledger for tracing and costs. LangGraph state is session scoped, with no persistent cross session database.
+
+The two external API tools in the agent statement refer to search and model inference. Frameworks, validation libraries, the interface and hosting tools support the application rather than representing additional research agents.
+
+## Setup validation and operation
+
+### Setup and run
+
+Use Python 3.12. Create a virtual environment, install requirements.txt and copy .env.example to .env for local use. Set OPENAI_API_KEY and TAVILY_API_KEY; OPENAI_MODEL selects the model.
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\run.ps1
+```
+
+The local launcher verifies a loopback address before loading saved keys. Public deployment runs app.py and requires each visitor’s keys; it does not load local .env or shared environment API keys. Keys stay in session memory for calls and are not intentionally written to reports or logs. Clear keys and session removes active session references. Never commit .env.
+
+### Validation
+
+The application passed 94 automated checks covering evidence, routing, discovery gates, retry behavior, client resets, credential isolation, cost arithmetic, planning, approval and export. A live Frost Bank analysis produced four profiles and three campaign concepts with one accepted revision.
+
+The live sample contained 9 source supported fields out of 36. Two competitor product identities remained unverified, and no qualifying public checking CPA benchmark was found. The run made 15 model and 11 search attempts, using 176,372 input and 24,116 output tokens. Complete estimated model cost was $0.030630605 including cache writes, plus 11 Tavily credits. The client goal and approval were illustrative demo inputs.
+
+### Failure handling
+
+Remote operations allow one retry, with 20 second search and 120 second model timeouts. Reasoning models use low reasoning effort and an 8,000 token completion budget. A failed follow up extraction preserves grounded evidence. Website failures offer retry and manual correction. Live errors never silently switch to recorded outputs. Invalid approval returns to review for correction.
+
+### Current boundary and extensions
+
+The system prepares a reviewed research brief and budget scenario, then stops. It does not independently validate the client diagnosis, guarantee product eligibility or predict campaign results. Future extensions include governed historical benchmarks, internal rate cards, branch overlap analysis, audience planning and measurement reporting.
+
+## Development approach and learnings
+
+Codex assisted Python implementation, debugging, automated tests and documentation. Development prompts specified the intended behavior and review boundaries; test results, source evidence and visual checks were used to assess the implementation.
+
+### Coding prompts
+
+Representative prompts used during development are summarized below for clarity. They are implementation objectives rather than runtime system instructions.
+
+| Prompt focus | Development instruction |
+| --- | --- |
+| Agent orchestration | Build the four agent workflow with review and revision, and add an in app panel for tool calls, input and output tokens, and costs. |
+| Website discovery | Fix website lookup so an abbreviated FI name such as united heritage cu can find the official domain reliably, with a clear retry option when lookup fails. |
+| Credential handling | Use saved API keys automatically in the local app while keeping the public app bring your own keys. |
+| Evidence presentation | Sort verified claims to appear at the top of the evidence view. |
+
+### Implementation iterations
+
+The initial checking comparison was extended with a client discovery checkpoint so campaign recommendations depend on an identified need. Four specialist roles and a bounded critique and revision step added structure to the research and recommendations.
+
+Website recovery, manual correction and client state resets improved handling of lookup failures and client changes. The proposal planner added editable CPA assumptions and channel shares, followed by target alignment checks across the budget, approval and exports. Usage tracking was refined to include cache writes and billable retry attempts.
+
+### Learnings and observations
+
+Competitive research supports a client conversation but does not establish the cause of a growth problem. Separating public facts, client observations and planning assumptions prevents product terms from becoming unsupported diagnoses.
+
+Explicit unknowns are more useful than an apparently complete comparison built from weak evidence. Exact quotes improve traceability, while source conditions and freshness still require human review.
+
+Reliable proposals require consistent state as well as useful model responses. Client resets, saved budget versions and approval checks prevent stale inputs or mismatched targets from reaching exports. Cost visibility also requires capturing usage before parsing failures and pricing cache categories without double counting.
+
+Automated checks and a live rehearsal validate the workflow, not business impact. A strategist evaluation across multiple FI cases is still needed to establish proposal usefulness and preparation time savings.
+
+## Scored recommendation evaluation
+
+Ten fixed FI cases spanning awareness, application completion, funding and activation used synthetic client briefs and fresh public research. A separate, chronology blinded model invocation scored draft and final recommendation sets on goal fit, evidence fidelity, channel fit, testability, measurement and safeguards.
+
+Final automated rubric passes: 10/10; mean score 91.67/100 versus draft mean 75.41/100. Of 10 scored pairs, 9 improved and 0 declined. Passing requires at least 75/100, every dimension at least 2/4, valid citations and channels, and no judge flagged critical issue.
+
+| Institution | Draft /100 | Final /100 | Rubric pass |
+| --- | --- | --- | --- |
+| Frost Bank | 83.33 | 95.83 | Yes |
+| United Heritage CU | 70.83 | 91.67 | Yes |
+| Truliant FCU | 83.33 | 91.67 | Yes |
+| BECU | 79.17 | 95.83 | Yes |
+| Digital Federal CU | 75.0 | 75.0 | Yes |
+| Alliant CU | 70.83 | 91.67 | Yes |
+| Huntington Bank | 70.83 | 95.83 | Yes |
+| Regions Bank | 66.67 | 79.17 | Yes |
+| Fifth Third Bank | 70.83 | 100.0 | Yes |
+| PNC | 83.33 | 100.0 | Yes |
+
+### Configuration and reliability
+
+Quality scoring used 120 seconds, 8,000 completion tokens and low reasoning effort, now adopted by the application. The earlier 35 second / 3,800 token baseline yielded scored recommendations in 2/10 cases. A fresh post-fix United Heritage production run passed in 127.5 seconds, scoring 91.67/100. A full ten-case end-to-end rerun remains pending; component scores are not a production reliability pass.
+
+### Findings and limits
+
+The judge generally favored goal alignment, grounded claims and safeguards; recurring gaps were similar concepts across channels, unverified audience access and operational details. The same model family generated and judged outputs, so scores may be optimistic. Human strategist acceptance, time savings and campaign lift remain unmeasured. Complete cases, rubric, reasons and results are retained in evals/.
+
+Evaluation date: October 26 2026. All client goals are illustrative, not actual FI performance or campaign authorization.

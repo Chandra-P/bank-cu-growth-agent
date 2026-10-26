@@ -16,6 +16,8 @@ from .models import Source, Discovery, Extraction, Analysis, BenchmarkResearch, 
 from .usage import operation as usage_operation, event, finish, price_tokens, role
 
 T = TypeVar("T")
+MODEL_TIMEOUT_SECONDS = 120
+MODEL_COMPLETION_TOKENS = 8000
 
 
 class ProviderError(RuntimeError):
@@ -112,8 +114,10 @@ class LiveAnalyst:
             raise ValueError("Enter your OpenAI API key and model in the research panel.")
         # Reasoning models reject explicit sampling settings with their default
         # reasoning effort. Keep deterministic sampling for other providers.
-        sampling = {} if model.lower().startswith(("gpt-5", "gpt-6", "o1", "o3", "o4")) else {"temperature": 0}
-        self.model = ChatOpenAI(api_key=api_key, model=model, base_url=base_url or "https://api.openai.com/v1", timeout=35, max_retries=0, max_tokens=3800, **sampling)
+        sampling = {"reasoning_effort":"low"} if model.lower().startswith(("gpt-5", "gpt-6", "o1", "o3", "o4")) else {"temperature": 0}
+        # The three-concept response needs room for reasoning and valid JSON.
+        # Fixed 10-case evaluation exposed timeouts/truncation at 35s / 3800 tokens.
+        self.model = ChatOpenAI(api_key=api_key, model=model, base_url=base_url or "https://api.openai.com/v1", timeout=MODEL_TIMEOUT_SECONDS, max_retries=0, max_tokens=MODEL_COMPLETION_TOKENS, **sampling)
         self.model_name = model
         self.events = []
 
@@ -131,6 +135,7 @@ class LiveAnalyst:
         prompt = json.dumps({"task": task, "schema": schema.model_json_schema(), "data": context}, ensure_ascii=False)
         response = self.model.invoke([SystemMessage(content=SYSTEM), HumanMessage(content=prompt)])
         metadata = getattr(response, 'response_metadata', {}) or {}
+        record['finish_reason'] = metadata.get('finish_reason')
         record['model'] = metadata.get('model_name') or self.model_name
         price_tokens(record, getattr(response, 'usage_metadata', None), metadata)
         content = response.content
